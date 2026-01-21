@@ -104,7 +104,7 @@ class DashboardScreen extends ConsumerWidget {
             _DrawerTile(
               icon: Icons.settings_outlined,
               label: 'Settings',
-              onTap: () => context.go('/settings'),
+              onTap: () => context.push('/settings'),
             ),
           ],
         ),
