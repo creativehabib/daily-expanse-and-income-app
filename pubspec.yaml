@@ -17,6 +17,7 @@ dependencies:
   fl_chart: ^0.68.0
   uuid: ^4.4.0
   google_fonts: ^6.2.1
+  local_auth: ^2.2.0
 
 flutter:
   uses-material-design: true

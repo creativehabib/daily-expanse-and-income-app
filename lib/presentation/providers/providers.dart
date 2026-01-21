@@ -4,6 +4,7 @@ import '../../data/repositories/budget_repository.dart';
 import '../../data/repositories/category_repository.dart';
 import '../../data/repositories/settings_repository.dart';
 import '../../data/repositories/transaction_repository.dart';
+import '../../domain/models/app_settings.dart';
 import '../../domain/models/budget.dart';
 import '../../domain/models/category.dart';
 import '../../domain/models/transaction_entry.dart';
@@ -23,6 +24,10 @@ final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
 final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
   return SettingsRepository();
 });
+
+final settingsProvider = StateNotifierProvider<SettingsNotifier, AppSettings>(
+  (ref) => SettingsNotifier(ref.read(settingsRepositoryProvider)),
+);
 
 final categoriesProvider = StateNotifierProvider<CategoryNotifier, List<Category>>(
   (ref) => CategoryNotifier(ref.read(categoryRepositoryProvider)),
@@ -90,5 +95,16 @@ class TransactionNotifier extends StateNotifier<List<TransactionEntry>> {
   Future<void> remove(String id) async {
     await _repository.remove(id);
     load();
+  }
+}
+
+class SettingsNotifier extends StateNotifier<AppSettings> {
+  SettingsNotifier(this._repository) : super(_repository.getSettings());
+
+  final SettingsRepository _repository;
+
+  Future<void> updateSettings(AppSettings settings) async {
+    state = settings;
+    await _repository.saveSettings(settings);
   }
 }
