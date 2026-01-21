@@ -192,7 +192,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           title: const Text('Settings'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
+            onPressed: () async {
+              await _saveSettings();
+              if (context.mounted) {
+                context.pop();
+              }
+            },
             tooltip: 'Back',
           ),
         ),
