@@ -99,18 +99,6 @@ class DashboardScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const _FeaturedHero(),
-          const SizedBox(height: 20),
-          Text(
-            'Featured',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          const _FeaturedCarousel(),
-          const SizedBox(height: 24),
           _BalanceCard(
             totalBalance: formatter.format(totalBalance),
             income: formatter.format(monthlyIncome),
@@ -130,12 +118,12 @@ class DashboardScreen extends ConsumerWidget {
           else
             ...transactions.take(5).map(
                   (entry) => _TransactionTile(
-                    title: entry.note.isEmpty ? 'No note' : entry.note,
-                    date: DateFormat.yMMMd().format(entry.date),
-                    amount: formatter.format(entry.amount),
-                    isIncome: entry.type == 'income',
-                  ),
-                ),
+                title: entry.note.isEmpty ? 'No note' : entry.note,
+                date: DateFormat.yMMMd().format(entry.date),
+                amount: formatter.format(entry.amount),
+                isIncome: entry.type == 'income',
+              ),
+            ),
           const SizedBox(height: 80),
         ],
       ),
@@ -278,183 +266,6 @@ class _BalanceCard extends StatelessWidget {
                 icon: Icons.arrow_upward,
               ),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeaturedHero extends StatelessWidget {
-  const _FeaturedHero();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFFE0F2FE), Color(0xFFF8FAFC)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 68,
-            width: 68,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.dashboard_customize,
-              color: Color(0xFF2563EB),
-              size: 36,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Informative dashboard',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Quickly view income, expenses, and balance trends at a glance.',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: const Color(0xFF475569),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeaturedCarousel extends StatelessWidget {
-  const _FeaturedCarousel();
-
-  @override
-  Widget build(BuildContext context) {
-    final highlights = [
-      const _FeaturedHighlight(
-        icon: Icons.add_circle_outline,
-        title: 'Add Expenses',
-        description: 'Log expenses in seconds with smart categories.',
-        color: Color(0xFFEF4444),
-      ),
-      const _FeaturedHighlight(
-        icon: Icons.swap_horiz,
-        title: 'Smart Transfers',
-        description: 'Move funds between wallets with a tap.',
-        color: Color(0xFFF97316),
-      ),
-      const _FeaturedHighlight(
-        icon: Icons.receipt_long_outlined,
-        title: 'Monthly Reports',
-        description: 'Export PDF & Excel reports anytime.',
-        color: Color(0xFF2563EB),
-      ),
-      const _FeaturedHighlight(
-        icon: Icons.pie_chart_outline,
-        title: 'Category Insights',
-        description: 'Track weekly, monthly, yearly spend.',
-        color: Color(0xFF16A34A),
-      ),
-    ];
-
-    return SizedBox(
-      height: 150,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (context, index) => _FeaturedCard(highlight: highlights[index]),
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemCount: highlights.length,
-      ),
-    );
-  }
-}
-
-class _FeaturedHighlight {
-  const _FeaturedHighlight({
-    required this.icon,
-    required this.title,
-    required this.description,
-    required this.color,
-  });
-
-  final IconData icon;
-  final String title;
-  final String description;
-  final Color color;
-}
-
-class _FeaturedCard extends StatelessWidget {
-  const _FeaturedCard({required this.highlight});
-
-  final _FeaturedHighlight highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 220,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 16,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: highlight.color.withOpacity(0.12),
-            child: Icon(highlight.icon, color: highlight.color),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            highlight.title,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            highlight.description,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.grey.shade600,
-            ),
           ),
         ],
       ),
