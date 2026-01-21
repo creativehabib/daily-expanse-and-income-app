@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../providers/date_filter_provider.dart';
+import '../providers/providers.dart';
 import '../widgets/date_filter_bar.dart';
 import 'add_transaction_sheet.dart';
 
@@ -15,6 +16,13 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final settings = ref.watch(settingsProvider);
+    final profileName = settings.profileName.trim().isEmpty
+        ? 'Your profile'
+        : settings.profileName.trim();
+    final profileEmail = settings.profileEmail.trim().isEmpty
+        ? 'No email set'
+        : settings.profileEmail.trim();
     final transactions = ref.watch(filteredTransactionsProvider);
     final totalIncome = transactions
         .where((entry) => entry.type == 'income')
@@ -55,11 +63,11 @@ class DashboardScreen extends ConsumerWidget {
                 child: Icon(Icons.person, color: Colors.white),
               ),
               accountName: Text(
-                'Alex Johnson',
+                profileName,
                 style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
               ),
               accountEmail: Text(
-                'Premium Member',
+                profileEmail,
                 style: GoogleFonts.poppins(fontSize: 12),
               ),
             ),
