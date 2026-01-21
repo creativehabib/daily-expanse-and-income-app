@@ -1,4 +1,11 @@
 class AppSettings {
+  static const AppSettings defaults = AppSettings(
+    currency: 'BDT',
+    theme: 'system',
+    startOfWeek: 'sat',
+    biometricEnabled: false,
+  );
+
   final String currency;
   final String theme;
   final String startOfWeek;
