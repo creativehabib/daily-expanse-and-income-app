@@ -8,6 +8,8 @@ import '../providers/date_filter_provider.dart';
 import '../widgets/date_filter_bar.dart';
 import 'add_transaction_sheet.dart';
 
+final balancePrivacyModeProvider = StateProvider<bool>((ref) => false);
+
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -195,7 +197,7 @@ class _DrawerTile extends StatelessWidget {
   }
 }
 
-class _BalanceCard extends StatelessWidget {
+class _BalanceCard extends ConsumerWidget {
   const _BalanceCard({
     required this.totalBalance,
     required this.income,
@@ -207,7 +209,8 @@ class _BalanceCard extends StatelessWidget {
   final String expense;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isPrivacyMode = ref.watch(balancePrivacyModeProvider);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -236,12 +239,28 @@ class _BalanceCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            totalBalance,
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontSize: 28,
-              fontWeight: FontWeight.w600,
+          GestureDetector(
+            onTap: () {
+              ref.read(balancePrivacyModeProvider.notifier).state = !isPrivacyMode;
+            },
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  isPrivacyMode ? '****' : totalBalance,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Icon(
+                  isPrivacyMode ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  color: Colors.white70,
+                  size: 20,
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
