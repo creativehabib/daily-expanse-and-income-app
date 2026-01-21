@@ -1,0 +1,20 @@
+name: daily_expanse_and_income_app
+description: Daily expense, monthly expense, income tracker
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  go_router: ^14.2.7
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  intl: ^0.19.0
+  uuid: ^4.4.0
+
+flutter:
+  uses-material-design: true
