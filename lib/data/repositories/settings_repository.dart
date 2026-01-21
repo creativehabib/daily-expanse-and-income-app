@@ -9,7 +9,12 @@ class SettingsRepository {
   AppSettings getSettings() {
     final data = _box.get('app_settings');
     if (data == null) {
-      return const AppSettings(currency: 'BDT', theme: 'system', startOfWeek: 'sat');
+      return const AppSettings(
+        currency: 'BDT',
+        theme: 'system',
+        startOfWeek: 'sat',
+        biometricEnabled: false,
+      );
     }
     return AppSettings.fromMap(Map<String, dynamic>.from(data));
   }
