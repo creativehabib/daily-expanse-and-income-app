@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../../presentation/screens/budget_screen.dart';
 import '../../presentation/screens/categories_screen.dart';
 import '../../presentation/screens/dashboard_screen.dart';
+import '../../presentation/screens/about_screen.dart';
+import '../../presentation/screens/contact_screen.dart';
 import '../../presentation/screens/export_data_screen.dart';
 import '../../presentation/screens/reports_screen.dart';
 import '../../presentation/screens/settings_screen.dart';
@@ -17,6 +19,14 @@ class AppRouter {
       GoRoute(
         path: '/categories',
         builder: (context, state) => const CategoriesScreen(),
+      ),
+      GoRoute(
+        path: '/about',
+        builder: (context, state) => const AboutScreen(),
+      ),
+      GoRoute(
+        path: '/contact',
+        builder: (context, state) => const ContactScreen(),
       ),
       GoRoute(
         path: '/budget',
