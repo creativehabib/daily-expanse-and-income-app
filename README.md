@@ -1,51 +1,97 @@
-# Daily Expense + Monthly Expense + Income/Expense Tracker (Flutter)
+# Daily Expense & Income Tracker (Flutter, Offline-First for Bangladesh)
 
-নিচে প্রোডাকশন-রেডি স্টার্টার প্ল্যান + পূর্ণ কোড স্ট্রাকচার দেওয়া হলো। সব ব্যাখ্যা বাংলায়, আর কোড কমেন্ট ইংরেজিতে।
+এই প্রোজেক্টটি বাংলাদেশি ইউজারদের জন্য **দৈনন্দিন খরচ ও মাসিক আয়-ব্যয়** ট্র্যাক করার একটি Flutter অ্যাপের **রানযোগ্য (runnable) স্টার্টার কোড + পূর্ণ ব্যাখ্যা**। সব ব্যাখ্যা বাংলায়, কোড কমেন্ট ইংরেজিতে।
 
-## 1) App Features
+---
 
-### MVP Features
-- Daily expense entry (দৈনিক খরচ এন্ট্রি)
-- Income entry (আয় এন্ট্রি)
-- Category management (ডিফল্ট + কাস্টম ক্যাটাগরি)
-- Monthly budget সেট করা (overall)
-- Summary dashboard: Today / This Month
-- Category-wise breakdown (basic report list)
-- Dark mode (Material 3)
-- Local data storage (offline first)
-- Basic validation + empty state UI
+## 1️⃣ Features (Must-have + Future-ready)
 
-### Premium/Optional Features
-- Weekly/Custom date range summary
-- Category-wise budget
-- Reports: charts (monthly trend, income vs expense)
-- CSV/PDF Export
-- Backup/Restore (Local + Firebase)
-- Multi-currency formatting
-- Cloud sync (Firebase)
+### ✅ Must-have (MVP)
+- Daily expense add
+- Income add
+- Category-wise expense tracking
+- Default categories: **Food, Transport, Rent, Shopping, Bills, Salary, Others**
+- Custom category add/edit/delete
+- Today / This Month summary
+- Monthly total income & expense
+- Remaining balance calculation
+- Bangladeshi currency (৳ BDT)
+- Offline-first (no login required)
 
-## 2) Tech Stack (দুইটি অপশন)
+### 🚀 Advanced / Premium-ready
+- Monthly budget set (total + category wise)
+- Category wise expense report
+- Monthly report screen
+- Pie chart (category share)
+- Simple bar chart (monthly expense)
+- Dark mode
+- Data export (CSV) – optional
+- Backup/Restore – optional
 
-### Option A: Local-first
-**Flutter + Riverpod + Hive (Local DB)**
-- কেন ভালো: Offline-first, দ্রুত, কম খরচ, ছোট অ্যাপের জন্য সহজ।
-- Practical: ডেটা লোকালেই সেভ হবে, ডিভাইস-লেভেল পারফরম্যান্স ভালো।
+---
 
-### Option B: Cloud Sync
-**Flutter + Riverpod + Firebase Auth + Firestore**
-- কেন ভালো: Multi-device sync, backup, remote analytics, easy auth।
-- Practical: লগইন দরকার, ইন্টারনেট নির্ভর, খরচ বাড়তে পারে।
+## 2️⃣ Tech Stack (Final Decision)
 
-**Recommendation:** MVP/Starter এর জন্য Option A সবচেয়ে দ্রুত এবং কম জটিল। পরে চাইলে Option B তে আপগ্রেড করা যাবে।
+- **Flutter (latest stable)**
+- **State management:** Riverpod
+- **Local database:** **Hive (chosen)**
+- **Chart library:** fl_chart
+- **Routing:** go_router
+- **UI:** Material 3
 
-## 3) Data Model / Schema (উদাহরণ JSON/Map)
+### ✅ কেন Hive বেছে নেওয়া হলো (Isar vs Hive)
+- **Offline-first এবং lightweight**: ছোট থেকে মাঝারি ডেটার জন্য দ্রুত এবং সিম্পল।
+- **Setup সহজ**: code generation ছাড়াই দ্রুত চালু করা যায়।
+- **Flutter web ছাড়া মোবাইল ফোকাসড** অ্যাপের জন্য যথেষ্ট।
+- **Future scope**: বড় ডেটা/complex query দরকার হলে Isar এ আপগ্রেড করা যাবে।
 
-### Category
+> **Note:** Firebase ব্যবহার করা হয়নি (future scope হিসেবে রাখলাম)।
+
+---
+
+## 3️⃣ Data Models (Flutter class + Example Map/JSON)
+
+### ✅ Category Model
+**Flutter class (same as `lib/domain/models/category.dart`):**
+```dart
+class Category {
+  final String id;
+  final String name;
+  final String type; // income / expense / both
+  final int icon;
+  final int color;
+  final bool isDefault;
+  final DateTime createdAt;
+
+  const Category({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.icon,
+    required this.color,
+    required this.isDefault,
+    required this.createdAt,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'type': type,
+      'icon': icon,
+      'color': color,
+      'isDefault': isDefault,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+}
 ```
+**Example Map/JSON:**
+```json
 {
   "id": "cat_1",
-  "name": "Groceries",
-  "type": "expense", 
+  "name": "Food",
+  "type": "expense",
   "icon": 58248,
   "color": 4283215696,
   "isDefault": true,
@@ -53,8 +99,48 @@
 }
 ```
 
-### Transaction
+---
+
+### ✅ Transaction Model
+**Flutter class (same as `lib/domain/models/transaction_entry.dart`):**
+```dart
+class TransactionEntry {
+  final String id;
+  final String type; // income / expense
+  final double amount;
+  final String categoryId;
+  final String note;
+  final DateTime date;
+  final String? paymentMethod;
+  final DateTime createdAt;
+
+  const TransactionEntry({
+    required this.id,
+    required this.type,
+    required this.amount,
+    required this.categoryId,
+    required this.note,
+    required this.date,
+    required this.paymentMethod,
+    required this.createdAt,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'type': type,
+      'amount': amount,
+      'categoryId': categoryId,
+      'note': note,
+      'date': date.toIso8601String(),
+      'paymentMethod': paymentMethod,
+      'createdAt': createdAt.toIso8601String(),
+    };
+  }
+}
 ```
+**Example Map/JSON:**
+```json
 {
   "id": "txn_1",
   "type": "expense",
@@ -62,13 +148,43 @@
   "categoryId": "cat_1",
   "note": "Lunch",
   "date": "2024-07-10T12:30:00.000Z",
-  "paymentMethod": "Cash",
   "createdAt": "2024-07-10T12:30:00.000Z"
 }
 ```
 
-### Budget
+---
+
+### ✅ Budget Model
+**Flutter class (same as `lib/domain/models/budget.dart`):**
+```dart
+class Budget {
+  final String id;
+  final int month;
+  final int year;
+  final double totalBudget;
+  final Map<String, double> categoryBudgets;
+
+  const Budget({
+    required this.id,
+    required this.month,
+    required this.year,
+    required this.totalBudget,
+    required this.categoryBudgets,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'month': month,
+      'year': year,
+      'totalBudget': totalBudget,
+      'categoryBudgets': categoryBudgets,
+    };
+  }
+}
 ```
+**Example Map/JSON:**
+```json
 {
   "id": "budget_2024_07",
   "month": 7,
@@ -80,8 +196,33 @@
 }
 ```
 
-### Settings
+---
+
+### ✅ Settings Model
+**Flutter class (same as `lib/domain/models/app_settings.dart`):**
+```dart
+class AppSettings {
+  final String currency; // BDT
+  final String theme; // system / light / dark
+  final String startOfWeek; // sat
+
+  const AppSettings({
+    required this.currency,
+    required this.theme,
+    required this.startOfWeek,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'currency': currency,
+      'theme': theme,
+      'startOfWeek': startOfWeek,
+    };
+  }
+}
 ```
+**Example Map/JSON:**
+```json
 {
   "currency": "BDT",
   "theme": "system",
@@ -89,118 +230,209 @@
 }
 ```
 
-## 4) UI/UX Screen List + Wireframe-style Layout
+---
 
-### Onboarding (optional)
-- AppBar (skip)
-- 2–3 cards: “Track expense”, “Set budget”, “See reports”
-- CTA: Get Started
+## 4️⃣ Screens & UI Layout (Widget List)
 
-### Home Dashboard
-- AppBar (title + settings + reports icon)
-- Summary cards: Today expense, This month income/expense
-- Recent transactions list
-- FAB: Add Transaction
-- Quick actions: Categories, Budget
+### 1. Home Dashboard
+- AppBar (title + actions)
+- Balance summary card
+- Today expense card
+- This month income/expense cards
+- Recent transactions list (ListView)
+- FAB → Add transaction
 
-### Add Transaction (Bottom Sheet)
-- Segmented button: Expense/Income
-- Amount input
-- Category dropdown
-- Note input
+### 2. Add Transaction (Bottom Sheet)
+- Segmented control (Income / Expense)
+- Amount TextField
+- Category selector (Dropdown/Menu)
+- Date picker
+- Note TextField
+- Save button (ElevatedButton)
+
+### 3. Categories Screen
+- Category list (ListView)
+- Add/Edit/Delete actions
+- Default categories locked indicator
+
+### 4. Monthly Budget Screen
+- Current month budget card
+- Total budget input
+- Category budget list (optional)
 - Save button
 
-### Categories (Manage)
-- Form: name + type + save
-- List of categories (default locked)
+### 5. Reports Screen
+- Pie chart (category share)
+- Monthly income vs expense bar chart
+- Summary list
 
-### Monthly Budget
-- Current budget text
-- Input: total budget
-- Save budget button
+### 6. Settings Screen
+- Theme selector (System/Light/Dark)
+- Currency display (BDT)
+- Start of week dropdown
+- App info
 
-### Reports/Analytics
-- Top categories list (placeholder for chart)
-- Monthly trend placeholder
+---
 
-### Settings
-- Currency, Theme, Start-of-week dropdowns
-- Save button
+## 5️⃣ App Architecture
 
-## 5) Navigation + App Architecture
-
-**Folder structure (clean-ish):**
+- **Clean Architecture (simplified)**
+- **Folder structure:**
 ```
 lib/
-  core/
-    routing/
-    theme/
-  data/
-    local/
-    repositories/
-  domain/
-    models/
-    utils/
-  presentation/
-    providers/
-    screens/
-  main.dart
-  app.dart
+ ├─ core/          // routing, theme
+ ├─ data/          // hive storage + repositories
+ ├─ domain/        // models + calculations
+ ├─ presentation/  // screens + providers
+ ├─ app.dart
+ ├─ main.dart
+```
+- **Repository Pattern + Riverpod providers**
+- **go_router** for navigation
+
+---
+
+## 6️⃣ Full Working Starter Code (Mandatory)
+
+> এই রিপোজিটরিতে থাকা কোড **Copy-Paste করে run করা যাবে**। নিচে প্রয়োজনীয় অংশগুলো একসাথে দেওয়া হলো।
+
+### ✅ `pubspec.yaml`
+```yaml
+name: daily_expanse_and_income_app
+version: 1.0.0+1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.5.1
+  go_router: ^14.2.7
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  intl: ^0.19.0
+  fl_chart: ^0.68.0
+  uuid: ^4.4.0
 ```
 
-**Layers:**
-- presentation: UI + state
-- domain: models + business logic
-- data: DB/repositories
+### ✅ `lib/main.dart`
+```dart
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await HiveService.init();
 
-**State management:** Riverpod (StateNotifier + providers)
-**Routing:** go_router
+  final categoryRepository = CategoryRepository();
+  final transactionRepository = TransactionRepository();
+  await categoryRepository.seedDefaultCategories();
+  await transactionRepository.seedSampleTransactions();
 
-## 6) Full Working Code Starter
+  runApp(const ProviderScope(child: ExpenseApp()));
+}
+```
 
-> এই রিপোজিটরিতেই সম্পূর্ণ runnable starter code আছে।
+### ✅ Theme (Material 3)
+```dart
+class AppTheme {
+  static ThemeData get lightTheme => ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        useMaterial3: true,
+      );
 
-### Dependencies (pubspec.yaml)
-- flutter_riverpod
-- go_router
-- hive + hive_flutter
-- intl
-- uuid
+  static ThemeData get darkTheme => ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.teal,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      );
+}
+```
 
-### Main Flow
-- `HiveService.init()` → লোকাল DB প্রস্তুত
-- default categories seed
-- sample transactions seed
-- `ExpenseApp` boot
+### ✅ Router (go_router)
+```dart
+class AppRouter {
+  static final GoRouter router = GoRouter(
+    routes: <RouteBase>[
+      GoRoute(path: '/', builder: (context, state) => const DashboardScreen()),
+      GoRoute(path: '/categories', builder: (context, state) => const CategoriesScreen()),
+      GoRoute(path: '/budget', builder: (context, state) => const BudgetScreen()),
+      GoRoute(path: '/reports', builder: (context, state) => const ReportsScreen()),
+      GoRoute(path: '/settings', builder: (context, state) => const SettingsScreen()),
+    ],
+  );
+}
+```
 
-### CRUD Support
-- Transaction: add/update/delete
-- Category: add/update/delete
-- Budget: upsert
+### ✅ Hive Setup
+```dart
+class HiveService {
+  static const String categoryBox = 'categories';
+  static const String transactionBox = 'transactions';
+  static const String budgetBox = 'budgets';
+  static const String settingsBox = 'settings';
 
-### Summary Functions
-- daily total expense
-- monthly income/expense
-- category totals
-- budget remaining
-- date range filter
+  static Future<void> init() async {
+    await Hive.initFlutter();
+    await Hive.openBox<Map>(categoryBox);
+    await Hive.openBox<Map>(transactionBox);
+    await Hive.openBox<Map>(budgetBox);
+    await Hive.openBox<Map>(settingsBox);
+  }
+}
+```
 
-## 7) Business Logic (উদাহরণ ফাংশন)
+### ✅ Repository CRUD (Transaction উদাহরণ)
+```dart
+class TransactionRepository {
+  final Box<Map> _box = Hive.box<Map>(HiveService.transactionBox);
+  final Uuid _uuid = const Uuid();
 
-- Daily expense total
-- Monthly total (income/expense)
-- Category-wise totals
-- Remaining budget
-- Date range filter
+  List<TransactionEntry> getAll() => _box.values
+      .map((value) => TransactionEntry.fromMap(Map<String, dynamic>.from(value)))
+      .toList();
 
-সব ফাংশন `transaction_calculations.dart` এ দেওয়া আছে।
+  Future<void> add(TransactionEntry entry) async => _box.put(entry.id, entry.toMap());
+  Future<void> update(TransactionEntry entry) async => _box.put(entry.id, entry.toMap());
+  Future<void> remove(String id) async => _box.delete(id);
+}
+```
 
-## 8) Extras
-- Sample data seed (first run)
-- Validation rules (amount/name required)
-- Empty state cards
-- Error handling (basic)
-- Performance tips: pagination, lazy list, caching providers
+---
+
+## 7️⃣ Business Logic (Code Examples)
+
+```dart
+// daily expense calculation
+static double dailyTotalExpense(List<TransactionEntry> entries, DateTime day) {
+  return entries
+      .where((entry) => entry.type == 'expense')
+      .where((entry) => _isSameDay(entry.date, day))
+      .fold(0, (sum, entry) => sum + entry.amount);
+}
+
+// monthly income total
+static double monthlyTotal(List<TransactionEntry> entries, int month, int year, String type) {
+  return entries
+      .where((entry) => entry.type == type)
+      .where((entry) => entry.date.month == month && entry.date.year == year)
+      .fold(0, (sum, entry) => sum + entry.amount);
+}
+
+// remaining balance
+static double remainingBudget({required double totalBudget, required double totalExpense}) {
+  return totalBudget - totalExpense;
+}
+```
+
+---
+
+## 8️⃣ UX & Quality Guidelines
+
+- **Empty state UI**: যদি কোনো ডাটা না থাকে, placeholder card দেখানো হবে।
+- **Validation**: amount + category required।
+- **Loading state**: data fetch হলে loader দেখানো হবে।
+- **Error handling**: basic try/catch + user feedback।
+- **Performance tips**: lazy list, Hive indexed keys, minimal rebuilds।
+
+---
 
 ## Run Instructions
 
@@ -216,4 +448,4 @@ flutter build apk --release
 
 ---
 
-**Note:** এই স্টার্টার কোড production-ready structure অনুসরণ করে। পরবর্তীতে Firebase sync/analytics/export যুক্ত করা সহজ হবে।
+**Note:** এই স্টার্টার কোড future-ready, Firebase sync বা analytics পরে সহজে যোগ করা যাবে।

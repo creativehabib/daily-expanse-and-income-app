@@ -32,15 +32,16 @@ class CategoryRepository {
       return;
     }
 
+    final now = DateTime.now();
     final defaults = [
       Category(
         id: _uuid.v4(),
-        name: 'Groceries',
+        name: 'Food',
         type: 'expense',
-        icon: Icons.shopping_cart.codePoint,
+        icon: Icons.restaurant.codePoint,
         color: Colors.green.value,
         isDefault: true,
-        createdAt: DateTime.now(),
+        createdAt: now,
       ),
       Category(
         id: _uuid.v4(),
@@ -49,7 +50,34 @@ class CategoryRepository {
         icon: Icons.directions_bus.codePoint,
         color: Colors.blue.value,
         isDefault: true,
-        createdAt: DateTime.now(),
+        createdAt: now,
+      ),
+      Category(
+        id: _uuid.v4(),
+        name: 'Rent',
+        type: 'expense',
+        icon: Icons.home.codePoint,
+        color: Colors.brown.value,
+        isDefault: true,
+        createdAt: now,
+      ),
+      Category(
+        id: _uuid.v4(),
+        name: 'Shopping',
+        type: 'expense',
+        icon: Icons.shopping_bag.codePoint,
+        color: Colors.pink.value,
+        isDefault: true,
+        createdAt: now,
+      ),
+      Category(
+        id: _uuid.v4(),
+        name: 'Bills',
+        type: 'expense',
+        icon: Icons.receipt_long.codePoint,
+        color: Colors.deepPurple.value,
+        isDefault: true,
+        createdAt: now,
       ),
       Category(
         id: _uuid.v4(),
@@ -58,7 +86,16 @@ class CategoryRepository {
         icon: Icons.account_balance_wallet.codePoint,
         color: Colors.orange.value,
         isDefault: true,
-        createdAt: DateTime.now(),
+        createdAt: now,
+      ),
+      Category(
+        id: _uuid.v4(),
+        name: 'Others',
+        type: 'expense',
+        icon: Icons.category.codePoint,
+        color: Colors.teal.value,
+        isDefault: true,
+        createdAt: now,
       ),
     ];
 
