@@ -46,6 +46,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _biometricEnabled = false;
       }
     });
+    if (!available) {
+      final settings = ref.read(settingsProvider);
+      if (settings.biometricEnabled) {
+        await ref
+            .read(settingsProvider.notifier)
+            .updateSettings(settings.copyWith(biometricEnabled: false));
+      }
+    }
+  }
+
+  Future<void> _updateBiometricSetting(bool value) async {
+    setState(() {
+      _biometricEnabled = value;
+    });
+    final settings = ref.read(settingsProvider);
+    await ref.read(settingsProvider.notifier).updateSettings(
+          settings.copyWith(
+            biometricEnabled: value && _biometricAvailable,
+          ),
+        );
   }
 
   Future<void> _resetData() async {
@@ -172,10 +192,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             value: _biometricEnabled,
             onChanged: _checkingBiometric || !_biometricAvailable
                 ? null
-                : (value) {
-                    setState(() {
-                      _biometricEnabled = value;
-                    });
+                : (value) async {
+                    await _updateBiometricSetting(value);
                   },
             title: const Text('Biometric Login'),
             subtitle: Text(
