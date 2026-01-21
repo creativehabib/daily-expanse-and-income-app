@@ -15,6 +15,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
   String _currency = 'BDT';
   String _theme = 'system';
   String _startOfWeek = 'sat';
@@ -27,11 +29,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   void initState() {
     super.initState();
     final settings = ref.read(settingsProvider);
+    _nameController = TextEditingController(text: settings.profileName);
+    _emailController = TextEditingController(text: settings.profileEmail);
     _currency = settings.currency;
     _theme = settings.theme;
     _startOfWeek = settings.startOfWeek;
     _biometricEnabled = settings.biometricEnabled;
     _checkBiometricAvailability();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    super.dispose();
   }
 
   Future<void> _checkBiometricAvailability() async {
@@ -85,6 +96,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           .read(settingsProvider.notifier)
           .updateSettings(AppSettings.defaults);
       setState(() {
+        _nameController.text = AppSettings.defaults.profileName;
+        _emailController.text = AppSettings.defaults.profileEmail;
         _currency = AppSettings.defaults.currency;
         _theme = AppSettings.defaults.theme;
         _startOfWeek = AppSettings.defaults.startOfWeek;
@@ -147,6 +160,35 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          Text(
+            'Profile',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _nameController,
+            decoration: const InputDecoration(
+              labelText: 'Name',
+              border: OutlineInputBorder(),
+            ),
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _emailController,
+            decoration: const InputDecoration(
+              labelText: 'Email',
+              border: OutlineInputBorder(),
+            ),
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Preferences',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: _currency,
             decoration: const InputDecoration(
@@ -208,6 +250,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           FilledButton(
             onPressed: () async {
               final settings = AppSettings(
+                profileName: _nameController.text.trim(),
+                profileEmail: _emailController.text.trim(),
                 currency: _currency,
                 theme: _theme,
                 startOfWeek: _startOfWeek,
