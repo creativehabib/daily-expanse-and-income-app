@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../domain/utils/transaction_calculations.dart';
@@ -16,7 +17,14 @@ class ReportsScreen extends ConsumerWidget {
     final formatter = NumberFormat.currency(symbol: '৳');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reports')),
+      appBar: AppBar(
+        title: const Text('Reports'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/'),
+          tooltip: 'Back',
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
