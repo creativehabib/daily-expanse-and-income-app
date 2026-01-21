@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ContactScreen extends StatelessWidget {
   const ContactScreen({super.key});
@@ -8,6 +9,11 @@ class ContactScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Contact'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+          tooltip: 'Back',
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
