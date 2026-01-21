@@ -92,9 +92,19 @@ class DashboardScreen extends ConsumerWidget {
               onTap: () => context.go('/export'),
             ),
             _DrawerTile(
+              icon: Icons.info_outline,
+              label: 'About',
+              onTap: () => context.push('/about'),
+            ),
+            _DrawerTile(
+              icon: Icons.contact_support_outlined,
+              label: 'Contact',
+              onTap: () => context.push('/contact'),
+            ),
+            _DrawerTile(
               icon: Icons.settings_outlined,
               label: 'Settings',
-              onTap: () => context.go('/settings'),
+              onTap: () => context.push('/settings'),
             ),
           ],
         ),
