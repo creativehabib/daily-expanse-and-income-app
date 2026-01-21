@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/biometric_auth_service.dart';
+import '../../data/local/data_reset_service.dart';
 import '../../domain/models/app_settings.dart';
 import '../providers/providers.dart';
 
@@ -20,6 +21,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _biometricEnabled = false;
   bool _biometricAvailable = false;
   bool _checkingBiometric = true;
+  bool _resettingData = false;
 
   @override
   void initState() {
@@ -44,6 +46,71 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         _biometricEnabled = false;
       }
     });
+  }
+
+  Future<void> _resetData() async {
+    setState(() {
+      _resettingData = true;
+    });
+
+    try {
+      await DataResetService().resetToDefaults();
+      if (!mounted) {
+        return;
+      }
+      ref.read(categoriesProvider.notifier).load();
+      ref.read(transactionsProvider.notifier).load();
+      ref.invalidate(budgetProvider);
+      await ref
+          .read(settingsProvider.notifier)
+          .updateSettings(AppSettings.defaults);
+      setState(() {
+        _currency = AppSettings.defaults.currency;
+        _theme = AppSettings.defaults.theme;
+        _startOfWeek = AppSettings.defaults.startOfWeek;
+        _biometricEnabled = AppSettings.defaults.biometricEnabled;
+      });
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data reset to defaults')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _resettingData = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _confirmReset() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Reset all data?'),
+          content: const Text(
+            'This will remove all transactions, budgets, and settings. '
+            'Default categories and sample entries will be restored.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Reset'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true && mounted) {
+      await _resetData();
+    }
   }
 
   @override
@@ -136,6 +203,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               }
             },
             child: const Text('Save Settings'),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Data management',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: _resettingData ? null : _confirmReset,
+            icon: const Icon(Icons.restart_alt),
+            label: Text(_resettingData ? 'Resetting...' : 'Factory reset'),
           ),
         ],
       ),
