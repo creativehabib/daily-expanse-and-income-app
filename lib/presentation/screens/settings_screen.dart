@@ -117,6 +117,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  AppSettings _buildSettings() {
+    return AppSettings(
+      profileName: _nameController.text.trim(),
+      profileEmail: _emailController.text.trim(),
+      currency: _currency,
+      theme: _theme,
+      startOfWeek: _startOfWeek,
+      biometricEnabled: _biometricEnabled && _biometricAvailable,
+    );
+  }
+
+  bool _settingsMatch(AppSettings current, AppSettings next) {
+    return current.profileName == next.profileName &&
+        current.profileEmail == next.profileEmail &&
+        current.currency == next.currency &&
+        current.theme == next.theme &&
+        current.startOfWeek == next.startOfWeek &&
+        current.biometricEnabled == next.biometricEnabled;
+  }
+
+  Future<void> _saveSettings({bool showSnackBar = false}) async {
+    final nextSettings = _buildSettings();
+    final currentSettings = ref.read(settingsProvider);
+    if (_settingsMatch(currentSettings, nextSettings)) {
+      return;
+    }
+    await ref.read(settingsProvider.notifier).updateSettings(nextSettings);
+    if (showSnackBar && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Settings saved')),
+      );
+    }
+  }
+
   Future<void> _confirmReset() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -148,136 +182,135 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Settings'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/'),
-          tooltip: 'Back',
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'Profile',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Name',
-              border: OutlineInputBorder(),
-            ),
-            textInputAction: TextInputAction.next,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _emailController,
-            decoration: const InputDecoration(
-              labelText: 'Email',
-              border: OutlineInputBorder(),
-            ),
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Preferences',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            value: _currency,
-            decoration: const InputDecoration(
-              labelText: 'Currency',
-              border: OutlineInputBorder(),
-            ),
-            items: const [
-              DropdownMenuItem(value: 'BDT', child: Text('BDT')),
-              DropdownMenuItem(value: 'USD', child: Text('USD')),
-              DropdownMenuItem(value: 'EUR', child: Text('EUR')),
-            ],
-            onChanged: (value) => setState(() => _currency = value ?? 'BDT'),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            value: _theme,
-            decoration: const InputDecoration(
-              labelText: 'Theme',
-              border: OutlineInputBorder(),
-            ),
-            items: const [
-              DropdownMenuItem(value: 'system', child: Text('System')),
-              DropdownMenuItem(value: 'light', child: Text('Light')),
-              DropdownMenuItem(value: 'dark', child: Text('Dark')),
-            ],
-            onChanged: (value) => setState(() => _theme = value ?? 'system'),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            value: _startOfWeek,
-            decoration: const InputDecoration(
-              labelText: 'Start of week',
-              border: OutlineInputBorder(),
-            ),
-            items: const [
-              DropdownMenuItem(value: 'sat', child: Text('Saturday')),
-              DropdownMenuItem(value: 'mon', child: Text('Monday')),
-            ],
-            onChanged: (value) => setState(() => _startOfWeek = value ?? 'sat'),
-          ),
-          const SizedBox(height: 12),
-          SwitchListTile(
-            value: _biometricEnabled,
-            onChanged: _checkingBiometric || !_biometricAvailable
-                ? null
-                : (value) async {
-                    await _updateBiometricSetting(value);
-                  },
-            title: const Text('Biometric Login'),
-            subtitle: Text(
-              _checkingBiometric
-                  ? 'Checking device availability...'
-                  : _biometricAvailable
-                      ? 'Use fingerprint/face to unlock the app.'
-                      : 'Biometric authentication is not available on this device.',
-            ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
+    return WillPopScope(
+      onWillPop: () async {
+        await _saveSettings();
+        return true;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Settings'),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
             onPressed: () async {
-              final settings = AppSettings(
-                profileName: _nameController.text.trim(),
-                profileEmail: _emailController.text.trim(),
-                currency: _currency,
-                theme: _theme,
-                startOfWeek: _startOfWeek,
-                biometricEnabled: _biometricEnabled && _biometricAvailable,
-              );
-              await ref.read(settingsProvider.notifier).updateSettings(settings);
+              await _saveSettings();
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Settings saved')),
-                );
+                context.go('/');
               }
             },
-            child: const Text('Save Settings'),
+            tooltip: 'Back',
           ),
-          const SizedBox(height: 24),
-          Text(
-            'Data management',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton.icon(
-            onPressed: _resettingData ? null : _confirmReset,
-            icon: const Icon(Icons.restart_alt),
-            label: Text(_resettingData ? 'Resetting...' : 'Factory reset'),
-          ),
-        ],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              'Profile',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Name',
+                border: OutlineInputBorder(),
+              ),
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _emailController,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Preferences',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<String>(
+              value: _currency,
+              decoration: const InputDecoration(
+                labelText: 'Currency',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'BDT', child: Text('BDT')),
+                DropdownMenuItem(value: 'USD', child: Text('USD')),
+                DropdownMenuItem(value: 'EUR', child: Text('EUR')),
+              ],
+              onChanged: (value) => setState(() => _currency = value ?? 'BDT'),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _theme,
+              decoration: const InputDecoration(
+                labelText: 'Theme',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'system', child: Text('System')),
+                DropdownMenuItem(value: 'light', child: Text('Light')),
+                DropdownMenuItem(value: 'dark', child: Text('Dark')),
+              ],
+              onChanged: (value) => setState(() => _theme = value ?? 'system'),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _startOfWeek,
+              decoration: const InputDecoration(
+                labelText: 'Start of week',
+                border: OutlineInputBorder(),
+              ),
+              items: const [
+                DropdownMenuItem(value: 'sat', child: Text('Saturday')),
+                DropdownMenuItem(value: 'mon', child: Text('Monday')),
+              ],
+              onChanged: (value) =>
+                  setState(() => _startOfWeek = value ?? 'sat'),
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile(
+              value: _biometricEnabled,
+              onChanged: _checkingBiometric || !_biometricAvailable
+                  ? null
+                  : (value) async {
+                      await _updateBiometricSetting(value);
+                    },
+              title: const Text('Biometric Login'),
+              subtitle: Text(
+                _checkingBiometric
+                    ? 'Checking device availability...'
+                    : _biometricAvailable
+                        ? 'Use fingerprint/face to unlock the app.'
+                        : 'Biometric authentication is not available on this device.',
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton(
+              onPressed: () async {
+                await _saveSettings(showSnackBar: true);
+              },
+              child: const Text('Save Settings'),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Data management',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: _resettingData ? null : _confirmReset,
+              icon: const Icon(Icons.restart_alt),
+              label: Text(_resettingData ? 'Resetting...' : 'Factory reset'),
+            ),
+          ],
+        ),
       ),
     );
   }
