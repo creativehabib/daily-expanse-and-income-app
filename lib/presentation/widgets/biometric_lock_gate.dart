@@ -17,6 +17,7 @@ class BiometricLockGate extends ConsumerStatefulWidget {
 class _BiometricLockGateState extends ConsumerState<BiometricLockGate>
     with WidgetsBindingObserver {
   final BiometricAuthService _authService = BiometricAuthService();
+  ProviderSubscription<AppSettings>? _settingsSubscription;
   bool _unlocked = false;
   bool _authInProgress = false;
   String? _error;
@@ -28,16 +29,20 @@ class _BiometricLockGateState extends ConsumerState<BiometricLockGate>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleSettingsChange(ref.read(settingsProvider));
     });
-    ref.listen<AppSettings>(settingsProvider, (previous, next) {
-      if (previous?.biometricEnabled != next.biometricEnabled) {
-        _handleSettingsChange(next);
-      }
-    });
+    _settingsSubscription = ref.listenManual<AppSettings>(
+      settingsProvider,
+      (previous, next) {
+        if (previous?.biometricEnabled != next.biometricEnabled) {
+          _handleSettingsChange(next);
+        }
+      },
+    );
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _settingsSubscription?.close();
     super.dispose();
   }
 
