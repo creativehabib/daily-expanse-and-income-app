@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../../domain/utils/transaction_calculations.dart';
-import '../providers/providers.dart';
+import '../providers/date_filter_provider.dart';
+import '../widgets/date_filter_bar.dart';
 import 'add_transaction_sheet.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -13,21 +13,14 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final transactions = ref.watch(transactionsProvider);
-    final now = DateTime.now();
-    final monthlyIncome = TransactionCalculations.monthlyTotal(
-      transactions,
-      now.month,
-      now.year,
-      'income',
-    );
-    final monthlyExpense = TransactionCalculations.monthlyTotal(
-      transactions,
-      now.month,
-      now.year,
-      'expense',
-    );
-    final totalBalance = monthlyIncome - monthlyExpense;
+    final transactions = ref.watch(filteredTransactionsProvider);
+    final totalIncome = transactions
+        .where((entry) => entry.type == 'income')
+        .fold<double>(0, (sum, entry) => sum + entry.amount);
+    final totalExpense = transactions
+        .where((entry) => entry.type == 'expense')
+        .fold<double>(0, (sum, entry) => sum + entry.amount);
+    final totalBalance = totalIncome - totalExpense;
     final formatter = NumberFormat.currency(symbol: '৳');
 
     return Scaffold(
@@ -99,10 +92,12 @@ class DashboardScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const DateFilterBar(),
+          const SizedBox(height: 16),
           _BalanceCard(
             totalBalance: formatter.format(totalBalance),
-            income: formatter.format(monthlyIncome),
-            expense: formatter.format(monthlyExpense),
+            income: formatter.format(totalIncome),
+            expense: formatter.format(totalExpense),
           ),
           const SizedBox(height: 24),
           Text(
