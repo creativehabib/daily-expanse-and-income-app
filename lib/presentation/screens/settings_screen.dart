@@ -190,16 +190,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Settings'),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
-              await _saveSettings();
-              if (context.mounted) {
-                context.go('/');
-              }
-            },
-            tooltip: 'Back',
-          ),
         ),
         body: ListView(
           padding: const EdgeInsets.all(16),
