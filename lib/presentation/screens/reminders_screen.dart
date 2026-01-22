@@ -12,10 +12,15 @@ class _RemindersScreenState extends State<RemindersScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final List<String> _frequencies = const [
+    'Once',
     'Daily',
-    'Weekly',
+    'Every 2 weeks',
+    'Every 4 weeks',
     'Monthly',
-    'Yearly',
+    'Every 2 months',
+    'Every quarter',
+    'Every 6 months',
+    'Every year',
   ];
   late String _selectedFrequency;
   DateTime _selectedDate = DateTime.now();
