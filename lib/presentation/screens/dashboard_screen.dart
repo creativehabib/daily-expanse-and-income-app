@@ -92,6 +92,11 @@ class DashboardScreen extends ConsumerWidget {
               onTap: () => context.go('/budget'),
             ),
             _DrawerTile(
+              icon: Icons.notifications_outlined,
+              label: 'Reminders',
+              onTap: () => context.go('/reminders'),
+            ),
+            _DrawerTile(
               icon: Icons.upload_file_outlined,
               label: 'Export Data',
               onTap: () => context.go('/export'),
