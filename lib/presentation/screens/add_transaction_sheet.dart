@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Import for HapticFeedback
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+// Assuming these exist in your project structure
 import '../../domain/models/transaction_entry.dart';
 import '../providers/providers.dart';
 
@@ -45,8 +47,17 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Add Transaction', style: Theme.of(context).textTheme.titleLarge),
-            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Add Transaction', style: Theme.of(context).textTheme.headlineSmall),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                )
+              ],
+            ),
+            const SizedBox(height: 16),
             SegmentedButton<String>(
               segments: const [
                 ButtonSegment(value: 'expense', label: Text('Expense')),
@@ -57,67 +68,68 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 setState(() => _type = value.first);
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             TextFormField(
               controller: _amountController,
               focusNode: _amountFocusNode,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 labelText: 'Amount',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.calculate),
-                  tooltip: 'Calculator',
-                  onPressed: () {
-                    _openCalculator(context);
-                  },
+                prefixText: '\$ ', // Or your currency symbol
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                suffixIcon: Container(
+                  margin: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.calculate, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                    tooltip: 'Calculator',
+                    onPressed: () => _openCalculator(context),
+                  ),
                 ),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Enter amount';
-                }
-                if (double.tryParse(value) == null) {
-                  return 'Invalid amount';
-                }
+                if (value == null || value.isEmpty) return 'Enter amount';
+                if (double.tryParse(value) == null) return 'Invalid amount';
                 return null;
               },
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               value: _categoryId,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Category',
-                border: OutlineInputBorder(),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
               ),
               items: categories
-                  .where((category) =>
-                      category.type == _type || category.type == 'both')
+                  .where((category) => category.type == _type || category.type == 'both')
                   .map((category) => DropdownMenuItem(
-                        value: category.id,
-                        child: Text(category.name),
-                      ))
+                value: category.id,
+                child: Text(category.name),
+              ))
                   .toList(),
               onChanged: (value) => setState(() => _categoryId = value),
-              validator: (value) =>
-                  value == null ? 'Please select category' : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _noteController,
-              decoration: const InputDecoration(
-                labelText: 'Note',
-                border: OutlineInputBorder(),
-              ),
+              validator: (value) => value == null ? 'Please select category' : null,
             ),
             const SizedBox(height: 16),
+            TextFormField(
+              controller: _noteController,
+              decoration: InputDecoration(
+                labelText: 'Note',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+            ),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
+              height: 50,
               child: FilledButton(
                 onPressed: () async {
-                  if (!(_formKey.currentState?.validate() ?? false)) {
-                    return;
-                  }
+                  if (!(_formKey.currentState?.validate() ?? false)) return;
 
                   final entry = TransactionEntry(
                     id: const Uuid().v4(),
@@ -131,11 +143,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                   );
 
                   await ref.read(transactionsProvider.notifier).add(entry);
-                  if (context.mounted) {
-                    Navigator.pop(context);
-                  }
+                  if (context.mounted) Navigator.pop(context);
                 },
-                child: const Text('Save'),
+                child: const Text('Save Transaction'),
               ),
             ),
             const SizedBox(height: 16),
@@ -150,9 +160,9 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     final result = await showModalBottomSheet<double>(
       context: context,
       isScrollControlled: true,
-      builder: (context) => _CalculatorSheet(
-        initialValue: _amountController.text,
-      ),
+      useRootNavigator: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (context) => _CalculatorSheet(initialValue: _amountController.text),
     );
     if (result != null) {
       _amountController.text = _formatNumber(result);
@@ -160,6 +170,10 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
     }
   }
 }
+
+// -----------------------------------------------------------------------------
+// PREMIUM CALCULATOR UI
+// -----------------------------------------------------------------------------
 
 class _CalculatorSheet extends StatefulWidget {
   const _CalculatorSheet({required this.initialValue});
@@ -172,173 +186,303 @@ class _CalculatorSheet extends StatefulWidget {
 
 class _CalculatorSheetState extends State<_CalculatorSheet> {
   late String _expression;
+  String _liveResult = '';
 
   @override
   void initState() {
     super.initState();
     _expression = widget.initialValue.trim();
+    if (_expression.isEmpty) _expression = '0';
+    _updateLiveResult();
+  }
+
+  void _updateLiveResult() {
+    if (_expression.isEmpty || _expression == '0') {
+      setState(() => _liveResult = '');
+      return;
+    }
+    // Don't calculate if the last char is an operator
+    if ('+-×÷.'.contains(_expression[_expression.length - 1])) {
+      return;
+    }
+
+    final val = _evaluateExpression(_expression);
+    if (val != null) {
+      setState(() => _liveResult = _formatNumber(val));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Text(
-                  'Calculator',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: 'Close',
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            ),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final size = MediaQuery.of(context).size;
+
+    // Calculate nice button size based on screen width
+    final double buttonSize = (size.width - 64) / 4;
+
+    return Container(
+      height: size.height * 0.75, // Occupy 75% of screen
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Column(
+        children: [
+          // Drag Handle
+          Center(
+            child: Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: colorScheme.outlineVariant),
-              ),
-              child: Text(
-                _expression.isEmpty ? '0' : _expression,
-                textAlign: TextAlign.end,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                color: colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 12),
-            GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 4,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 1.25,
+          ),
+
+          // Display Area
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              alignment: Alignment.bottomRight,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  // The equation text
+                  Text(
+                    _expression,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.end,
+                    style: theme.textTheme.displaySmall?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // The live preview text
+                  if (_liveResult.isNotEmpty && _liveResult != _expression)
+                    Text(
+                      '= $_liveResult',
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: colorScheme.secondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          const Divider(height: 1),
+
+          // Keypad Area
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
               children: [
-                _buildButton('AC', _clear, style: _ButtonStyle.secondary),
-                _buildButton('⌫', _backspace, style: _ButtonStyle.secondary),
-                _buildButton('%', _percent, style: _ButtonStyle.secondary),
-                _buildButton('÷', () => _append('÷'),
-                    style: _ButtonStyle.operator),
-                _buildButton('7', () => _append('7')),
-                _buildButton('8', () => _append('8')),
-                _buildButton('9', () => _append('9')),
-                _buildButton('×', () => _append('×'),
-                    style: _ButtonStyle.operator),
-                _buildButton('4', () => _append('4')),
-                _buildButton('5', () => _append('5')),
-                _buildButton('6', () => _append('6')),
-                _buildButton('-', () => _append('-'),
-                    style: _ButtonStyle.operator),
-                _buildButton('1', () => _append('1')),
-                _buildButton('2', () => _append('2')),
-                _buildButton('3', () => _append('3')),
-                _buildButton('+', () => _append('+'),
-                    style: _ButtonStyle.operator),
-                _buildButton('.', () => _append('.'),
-                    style: _ButtonStyle.secondary),
-                _buildButton('0', () => _append('0')),
-                _buildButton('=', _evaluate, style: _ButtonStyle.operator),
-                _buildButton('OK', _submit, style: _ButtonStyle.primary),
+                _buildRow(
+                  children: [
+                    _buildButton('C', _clear, style: _ButtonStyle.error),
+                    _buildButton('⌫', _backspace, style: _ButtonStyle.secondary),
+                    _buildButton('%', _percent, style: _ButtonStyle.secondary),
+                    _buildButton('÷', () => _append('÷'), style: _ButtonStyle.operator),
+                  ],
+                  size: buttonSize,
+                ),
+                const SizedBox(height: 12),
+                _buildRow(
+                  children: [
+                    _buildButton('7', () => _append('7')),
+                    _buildButton('8', () => _append('8')),
+                    _buildButton('9', () => _append('9')),
+                    _buildButton('×', () => _append('×'), style: _ButtonStyle.operator),
+                  ],
+                  size: buttonSize,
+                ),
+                const SizedBox(height: 12),
+                _buildRow(
+                  children: [
+                    _buildButton('4', () => _append('4')),
+                    _buildButton('5', () => _append('5')),
+                    _buildButton('6', () => _append('6')),
+                    _buildButton('-', () => _append('-'), style: _ButtonStyle.operator),
+                  ],
+                  size: buttonSize,
+                ),
+                const SizedBox(height: 12),
+                _buildRow(
+                  children: [
+                    _buildButton('1', () => _append('1')),
+                    _buildButton('2', () => _append('2')),
+                    _buildButton('3', () => _append('3')),
+                    _buildButton('+', () => _append('+'), style: _ButtonStyle.operator),
+                  ],
+                  size: buttonSize,
+                ),
+                const SizedBox(height: 12),
+                _buildRow(
+                  children: [
+                    _buildButton('.', () => _append('.')),
+                    _buildButton('0', () => _append('0')),
+                    // Equal / OK button combo
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 12),
+                        child: FilledButton(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            _submit();
+                          },
+                          style: FilledButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: buttonSize / 2.5),
+                          ),
+                          child: Text(
+                            'OK',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              color: colorScheme.onPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  size: buttonSize,
+                  isLastRow: true,
+                ),
               ],
             ),
-          ],
+          ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRow({
+    required List<Widget> children,
+    required double size,
+    bool isLastRow = false
+  }) {
+    // For the last row, we handle spacing differently due to the expanded button
+    if (isLastRow) {
+      return Row(
+        children: children.map((w) {
+          if (w is Expanded) return w;
+          return Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: SizedBox(width: size, height: size, child: w),
+          );
+        }).toList(),
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: children.map((w) => SizedBox(width: size, height: size, child: w)).toList(),
+    );
+  }
+
+  Widget _buildButton(
+      String label,
+      VoidCallback onPressed, {
+        _ButtonStyle style = _ButtonStyle.standard,
+      }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    Color bgColor;
+    Color fgColor;
+
+    switch (style) {
+      case _ButtonStyle.standard:
+        bgColor = colorScheme.surfaceContainerHighest.withOpacity(0.5);
+        fgColor = colorScheme.onSurface;
+        break;
+      case _ButtonStyle.secondary:
+        bgColor = colorScheme.secondaryContainer;
+        fgColor = colorScheme.onSecondaryContainer;
+        break;
+      case _ButtonStyle.operator:
+        bgColor = colorScheme.tertiaryContainer;
+        fgColor = colorScheme.onTertiaryContainer;
+        break;
+      case _ButtonStyle.error:
+        bgColor = colorScheme.errorContainer;
+        fgColor = colorScheme.onErrorContainer;
+        break;
+      default:
+        bgColor = colorScheme.surface;
+        fgColor = colorScheme.onSurface;
+    }
+
+    return Material(
+      color: bgColor,
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onPressed();
+        },
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
+              color: fgColor,
+            ),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildButton(
-    String label,
-    VoidCallback onPressed, {
-    _ButtonStyle style = _ButtonStyle.standard,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    Color backgroundColor;
-    Color foregroundColor;
-
-    switch (style) {
-      case _ButtonStyle.primary:
-        backgroundColor = colorScheme.primary;
-        foregroundColor = colorScheme.onPrimary;
-        break;
-      case _ButtonStyle.operator:
-        backgroundColor = colorScheme.primaryContainer;
-        foregroundColor = colorScheme.onPrimaryContainer;
-        break;
-      case _ButtonStyle.secondary:
-        backgroundColor = colorScheme.surfaceContainerHighest;
-        foregroundColor = colorScheme.onSurface;
-        break;
-      case _ButtonStyle.standard:
-        backgroundColor = colorScheme.surface;
-        foregroundColor = colorScheme.onSurface;
-        break;
-    }
-
-    return FilledButton(
-      style: FilledButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: foregroundColor,
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        textStyle: Theme.of(context).textTheme.titleMedium,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      onPressed: onPressed,
-      child: Text(label),
-    );
-  }
-
   void _append(String value) {
     setState(() {
-      _expression += value;
+      if (_expression == '0' && value != '.') {
+        _expression = value;
+      } else {
+        _expression += value;
+      }
+      _updateLiveResult();
     });
   }
 
   void _clear() {
     setState(() {
-      _expression = '';
+      _expression = '0';
+      _liveResult = '';
     });
   }
 
   void _backspace() {
-    if (_expression.isEmpty) {
-      return;
-    }
+    if (_expression.isEmpty || _expression == '0') return;
     setState(() {
-      _expression = _expression.substring(0, _expression.length - 1);
+      if (_expression.length == 1) {
+        _expression = '0';
+      } else {
+        _expression = _expression.substring(0, _expression.length - 1);
+      }
+      _updateLiveResult();
     });
   }
 
   void _percent() {
     final value = _evaluateExpression(_expression);
-    if (value == null) {
-      return;
-    }
+    if (value == null) return;
     setState(() {
       _expression = _formatNumber(value / 100);
-    });
-  }
-
-  void _evaluate() {
-    final value = _evaluateExpression(_expression);
-    if (value == null) {
-      return;
-    }
-    setState(() {
-      _expression = _formatNumber(value);
+      _updateLiveResult();
     });
   }
 
@@ -352,116 +496,94 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
   }
 }
 
-enum _ButtonStyle { standard, secondary, operator, primary }
+enum _ButtonStyle { standard, secondary, operator, error }
 
-double? _evaluateExpression(String expression) {
-  if (expression.trim().isEmpty) {
-    return 0;
-  }
-
-  final sanitized = expression.replaceAll('×', '*').replaceAll('÷', '/');
-  final tokens = <String>[];
-  final buffer = StringBuffer();
-  String? previousToken;
-
-  for (var i = 0; i < sanitized.length; i++) {
-    final char = sanitized[i];
-    if ('0123456789.'.contains(char)) {
-      buffer.write(char);
-      continue;
-    }
-
-    if ('+-*/'.contains(char)) {
-      if (buffer.isEmpty && (char == '-') && (previousToken == null || '+-*/'.contains(previousToken!))) {
-        buffer.write(char);
-        continue;
-      }
-      if (buffer.isNotEmpty) {
-        tokens.add(buffer.toString());
-        buffer.clear();
-      }
-      tokens.add(char);
-      previousToken = char;
-    }
-  }
-
-  if (buffer.isNotEmpty) {
-    tokens.add(buffer.toString());
-  }
-
-  if (tokens.isEmpty) {
-    return null;
-  }
-
-  final values = <double>[];
-  final operators = <String>[];
-
-  for (final token in tokens) {
-    if ('+-*/'.contains(token)) {
-      while (operators.isNotEmpty &&
-          _precedence(operators.last) >= _precedence(token)) {
-        final result = _applyOperation(
-          operators.removeLast(),
-          values.removeLast(),
-          values.removeLast(),
-        );
-        if (result == null) {
-          return null;
-        }
-        values.add(result);
-      }
-      operators.add(token);
-    } else {
-      final value = double.tryParse(token);
-      if (value == null) {
-        return null;
-      }
-      values.add(value);
-    }
-  }
-
-  while (operators.isNotEmpty) {
-    final result = _applyOperation(
-      operators.removeLast(),
-      values.removeLast(),
-      values.removeLast(),
-    );
-    if (result == null) {
-      return null;
-    }
-    values.add(result);
-  }
-
-  return values.isEmpty ? null : values.last;
-}
-
-int _precedence(String operator) {
-  if (operator == '*' || operator == '/') {
-    return 2;
-  }
-  return 1;
-}
-
-double? _applyOperation(String operator, double b, double a) {
-  switch (operator) {
-    case '+':
-      return a + b;
-    case '-':
-      return a - b;
-    case '*':
-      return a * b;
-    case '/':
-      if (b == 0) {
-        return null;
-      }
-      return a / b;
-  }
-  return null;
-}
+// -----------------------------------------------------------------------------
+// LOGIC UTILS (Kept mostly similar, just robustified)
+// -----------------------------------------------------------------------------
 
 String _formatNumber(double value) {
   if (value == value.roundToDouble()) {
     return value.toStringAsFixed(0);
   }
-  return value.toString();
+  // Remove trailing zeros for decimals
+  return value.toString().replaceAll(RegExp(r'([.]*0)(?!.*\d)'), '');
+}
+
+double? _evaluateExpression(String expression) {
+  try {
+    if (expression.trim().isEmpty) return 0;
+
+    final sanitized = expression.replaceAll('×', '*').replaceAll('÷', '/');
+    final tokens = <String>[];
+    final buffer = StringBuffer();
+    String? previousToken;
+
+    for (var i = 0; i < sanitized.length; i++) {
+      final char = sanitized[i];
+      if ('0123456789.'.contains(char)) {
+        buffer.write(char);
+        continue;
+      }
+
+      if ('+-*/'.contains(char)) {
+        if (buffer.isEmpty && (char == '-') && (previousToken == null || '+-*/'.contains(previousToken!))) {
+          buffer.write(char);
+          continue;
+        }
+        if (buffer.isNotEmpty) {
+          tokens.add(buffer.toString());
+          buffer.clear();
+        }
+        tokens.add(char);
+        previousToken = char;
+      }
+    }
+
+    if (buffer.isNotEmpty) tokens.add(buffer.toString());
+    if (tokens.isEmpty) return null;
+
+    final values = <double>[];
+    final operators = <String>[];
+
+    for (final token in tokens) {
+      if ('+-*/'.contains(token)) {
+        while (operators.isNotEmpty && _precedence(operators.last) >= _precedence(token)) {
+          final result = _applyOperation(operators.removeLast(), values.removeLast(), values.removeLast());
+          if (result == null) return null;
+          values.add(result);
+        }
+        operators.add(token);
+      } else {
+        final value = double.tryParse(token);
+        if (value == null) return null;
+        values.add(value);
+      }
+    }
+
+    while (operators.isNotEmpty) {
+      final result = _applyOperation(operators.removeLast(), values.removeLast(), values.removeLast());
+      if (result == null) return null;
+      values.add(result);
+    }
+
+    return values.isEmpty ? null : values.last;
+  } catch (e) {
+    return null; // Return null on any math errors
+  }
+}
+
+int _precedence(String operator) {
+  if (operator == '*' || operator == '/') return 2;
+  return 1;
+}
+
+double? _applyOperation(String operator, double b, double a) {
+  switch (operator) {
+    case '+': return a + b;
+    case '-': return a - b;
+    case '*': return a * b;
+    case '/': return b == 0 ? null : a / b;
+  }
+  return null;
 }
