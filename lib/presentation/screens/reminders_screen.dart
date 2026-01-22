@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class RemindersScreen extends StatefulWidget {
@@ -168,7 +169,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
         title: const Text('Reminders'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () => context.pop(),
         ),
       ),
       body: ListView(
