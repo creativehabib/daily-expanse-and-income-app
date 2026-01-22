@@ -33,6 +33,8 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider);
+    final settings = ref.watch(settingsProvider);
+    final currencySymbol = _currencySymbol(settings.currency);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -75,7 +77,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 labelText: 'Amount',
-                prefixText: '\$ ', // Or your currency symbol
+                prefixText: currencySymbol.isEmpty ? null : '$currencySymbol ',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 suffixIcon: Container(
@@ -217,9 +219,12 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final size = MediaQuery.of(context).size;
+    final isCompact = size.width < 360 || size.height < 700;
+    final rowSpacing = isCompact ? 8.0 : 12.0;
+    final keypadPadding = isCompact ? 12.0 : 16.0;
 
-    // Calculate nice button size based on screen width
-    final double buttonSize = (size.width - 64) / 4;
+    final expressionFontSize = (theme.textTheme.displaySmall?.fontSize ?? 34) * (isCompact ? 0.85 : 1);
+    final resultFontSize = (theme.textTheme.headlineSmall?.fontSize ?? 24) * (isCompact ? 0.9 : 1);
 
     return Container(
       height: size.height * 0.75, // Occupy 75% of screen
@@ -245,7 +250,10 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
           // Display Area
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: EdgeInsets.symmetric(
+                horizontal: isCompact ? 16 : 24,
+                vertical: isCompact ? 12 : 16,
+              ),
               alignment: Alignment.bottomRight,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -260,9 +268,10 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
                     style: theme.textTheme.displaySmall?.copyWith(
                       color: colorScheme.onSurface,
                       fontWeight: FontWeight.w400,
+                      fontSize: expressionFontSize,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  SizedBox(height: isCompact ? 4 : 8),
                   // The live preview text
                   if (_liveResult.isNotEmpty && _liveResult != _expression)
                     Text(
@@ -270,6 +279,7 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
                       style: theme.textTheme.headlineSmall?.copyWith(
                         color: colorScheme.secondary,
                         fontWeight: FontWeight.w500,
+                        fontSize: resultFontSize,
                       ),
                     ),
                 ],
@@ -281,86 +291,99 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
 
           // Keypad Area
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                _buildRow(
+            padding: EdgeInsets.all(keypadPadding),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final widthBased = (constraints.maxWidth - (rowSpacing * 3)) / 4;
+                final heightBased = (constraints.maxHeight - (rowSpacing * 4)) / 5;
+                final buttonSize = widthBased < heightBased ? widthBased : heightBased;
+
+                return Column(
                   children: [
-                    _buildButton('C', _clear, style: _ButtonStyle.error),
-                    _buildButton('⌫', _backspace, style: _ButtonStyle.secondary),
-                    _buildButton('%', _percent, style: _ButtonStyle.secondary),
-                    _buildButton('÷', () => _append('÷'), style: _ButtonStyle.operator),
-                  ],
-                  size: buttonSize,
-                ),
-                const SizedBox(height: 12),
-                _buildRow(
-                  children: [
-                    _buildButton('7', () => _append('7')),
-                    _buildButton('8', () => _append('8')),
-                    _buildButton('9', () => _append('9')),
-                    _buildButton('×', () => _append('×'), style: _ButtonStyle.operator),
-                  ],
-                  size: buttonSize,
-                ),
-                const SizedBox(height: 12),
-                _buildRow(
-                  children: [
-                    _buildButton('4', () => _append('4')),
-                    _buildButton('5', () => _append('5')),
-                    _buildButton('6', () => _append('6')),
-                    _buildButton('-', () => _append('-'), style: _ButtonStyle.operator),
-                  ],
-                  size: buttonSize,
-                ),
-                const SizedBox(height: 12),
-                _buildRow(
-                  children: [
-                    _buildButton('1', () => _append('1')),
-                    _buildButton('2', () => _append('2')),
-                    _buildButton('3', () => _append('3')),
-                    _buildButton('+', () => _append('+'), style: _ButtonStyle.operator),
-                  ],
-                  size: buttonSize,
-                ),
-                const SizedBox(height: 12),
-                _buildRow(
-                  children: [
-                    _buildButton('.', () => _append('.')),
-                    _buildButton('0', () => _append('0')),
-                    // Equal / OK button combo
-                    Expanded(
-                      flex: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 12),
-                        child: FilledButton(
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            _submit();
-                          },
-                          style: FilledButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: colorScheme.onPrimary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            padding: EdgeInsets.symmetric(vertical: buttonSize / 2.5),
-                          ),
-                          child: Text(
-                            'OK',
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              color: colorScheme.onPrimary,
-                              fontWeight: FontWeight.bold,
+                    _buildRow(
+                      children: [
+                        _buildButton('C', _clear, style: _ButtonStyle.error),
+                        _buildButton('⌫', _backspace, style: _ButtonStyle.secondary),
+                        _buildButton('%', _percent, style: _ButtonStyle.secondary),
+                        _buildButton('÷', () => _append('÷'), style: _ButtonStyle.operator),
+                      ],
+                      size: buttonSize,
+                      spacing: rowSpacing,
+                    ),
+                    SizedBox(height: rowSpacing),
+                    _buildRow(
+                      children: [
+                        _buildButton('7', () => _append('7')),
+                        _buildButton('8', () => _append('8')),
+                        _buildButton('9', () => _append('9')),
+                        _buildButton('×', () => _append('×'), style: _ButtonStyle.operator),
+                      ],
+                      size: buttonSize,
+                      spacing: rowSpacing,
+                    ),
+                    SizedBox(height: rowSpacing),
+                    _buildRow(
+                      children: [
+                        _buildButton('4', () => _append('4')),
+                        _buildButton('5', () => _append('5')),
+                        _buildButton('6', () => _append('6')),
+                        _buildButton('-', () => _append('-'), style: _ButtonStyle.operator),
+                      ],
+                      size: buttonSize,
+                      spacing: rowSpacing,
+                    ),
+                    SizedBox(height: rowSpacing),
+                    _buildRow(
+                      children: [
+                        _buildButton('1', () => _append('1')),
+                        _buildButton('2', () => _append('2')),
+                        _buildButton('3', () => _append('3')),
+                        _buildButton('+', () => _append('+'), style: _ButtonStyle.operator),
+                      ],
+                      size: buttonSize,
+                      spacing: rowSpacing,
+                    ),
+                    SizedBox(height: rowSpacing),
+                    _buildRow(
+                      children: [
+                        _buildButton('.', () => _append('.')),
+                        _buildButton('0', () => _append('0')),
+                        // Equal / OK button combo
+                        Expanded(
+                          flex: 2,
+                          child: Padding(
+                            padding: EdgeInsets.only(left: rowSpacing),
+                            child: FilledButton(
+                              onPressed: () {
+                                HapticFeedback.mediumImpact();
+                                _submit();
+                              },
+                              style: FilledButton.styleFrom(
+                                backgroundColor: colorScheme.primary,
+                                foregroundColor: colorScheme.onPrimary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                padding: EdgeInsets.symmetric(vertical: buttonSize / 2.5),
+                              ),
+                              child: Text(
+                                'OK',
+                                style: theme.textTheme.titleLarge?.copyWith(
+                                  color: colorScheme.onPrimary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
+                      size: buttonSize,
+                      spacing: rowSpacing,
+                      isLastRow: true,
                     ),
                   ],
-                  size: buttonSize,
-                  isLastRow: true,
-                ),
-              ],
+                );
+              },
             ),
           ),
           SizedBox(height: MediaQuery.of(context).padding.bottom),
@@ -372,7 +395,8 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
   Widget _buildRow({
     required List<Widget> children,
     required double size,
-    bool isLastRow = false
+    required double spacing,
+    bool isLastRow = false,
   }) {
     // For the last row, we handle spacing differently due to the expanded button
     if (isLastRow) {
@@ -380,7 +404,7 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
         children: children.map((w) {
           if (w is Expanded) return w;
           return Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: EdgeInsets.only(right: spacing),
             child: SizedBox(width: size, height: size, child: w),
           );
         }).toList(),
@@ -388,8 +412,12 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
     }
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: children.map((w) => SizedBox(width: size, height: size, child: w)).toList(),
+      children: children.map((w) {
+        return Padding(
+          padding: EdgeInsets.only(right: w == children.last ? 0 : spacing),
+          child: SizedBox(width: size, height: size, child: w),
+        );
+      }).toList(),
     );
   }
 
@@ -501,6 +529,19 @@ enum _ButtonStyle { standard, secondary, operator, error }
 // -----------------------------------------------------------------------------
 // LOGIC UTILS (Kept mostly similar, just robustified)
 // -----------------------------------------------------------------------------
+
+String _currencySymbol(String currency) {
+  switch (currency) {
+    case 'BDT':
+      return '৳';
+    case 'USD':
+      return r'$';
+    case 'EUR':
+      return '€';
+    default:
+      return currency;
+  }
+}
 
 String _formatNumber(double value) {
   if (value == value.roundToDouble()) {
