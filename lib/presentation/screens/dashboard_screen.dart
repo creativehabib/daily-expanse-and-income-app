@@ -130,14 +130,64 @@ class DashboardScreen extends ConsumerWidget {
             expense: formatter.format(totalExpense),
           ),
           const SizedBox(height: 24),
-          Text(
-            'Recent Transactions',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            children: [
+              Container(
+                height: 36,
+                width: 36,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F766E).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.history,
+                  color: Color(0xFF0F766E),
+                  size: 18,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Recent Transactions',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      'Track your latest income & expense entries',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withOpacity(0.06),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'Last 5',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xFF0F172A),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           if (transactions.isEmpty)
             const _EmptyState(
               message: 'No transactions yet. Add your first entry!',
@@ -409,15 +459,15 @@ class _TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accentColor =
-    isIncome ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
+        isIncome ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
     final icon = isIncome ? Icons.arrow_downward : Icons.arrow_upward;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -429,15 +479,15 @@ class _TransactionTile extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            height: 44,
-            width: 44,
+            height: 46,
+            width: 46,
             decoration: BoxDecoration(
               color: accentColor.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: accentColor),
+            child: Icon(icon, color: accentColor, size: 20),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,23 +497,42 @@ class _TransactionTile extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  date,
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 12,
+                      color: Colors.grey.shade500,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      date,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          Text(
-            amount,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-              color: accentColor,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: accentColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              amount,
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                color: accentColor,
+              ),
             ),
           ),
         ],
