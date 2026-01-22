@@ -27,6 +27,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
   TimeOfDay _selectedTime = TimeOfDay.now();
   bool _commentEnabled = false;
   final List<_Reminder> _reminders = [];
+  bool _showForm = false;
+  int? _editingIndex;
 
   @override
   void initState() {
@@ -85,17 +87,48 @@ class _RemindersScreenState extends State<RemindersScreen> {
       return;
     }
 
+    final isEditing = _editingIndex != null;
+    final reminder = _Reminder(
+      name: name,
+      frequency: _selectedFrequency,
+      date: _selectedDate,
+      time: _selectedTime,
+      comment: _commentEnabled ? _commentController.text.trim() : '',
+    );
+
     setState(() {
-      _reminders.insert(
-        0,
-        _Reminder(
-          name: name,
-          frequency: _selectedFrequency,
-          date: _selectedDate,
-          time: _selectedTime,
-          comment: _commentEnabled ? _commentController.text.trim() : '',
+      if (!isEditing) {
+        _reminders.insert(0, reminder);
+      } else {
+        _reminders[_editingIndex!] = reminder;
+      }
+      _resetFormState();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isEditing ? 'Reminder updated' : 'Reminder saved',
         ),
-      );
+      ),
+    );
+  }
+
+  void _resetFormState() {
+    _nameController.clear();
+    _commentController.clear();
+    _commentEnabled = false;
+    _selectedFrequency = _frequencies.first;
+    _selectedDate = DateTime.now();
+    _selectedTime = TimeOfDay.now();
+    _editingIndex = null;
+    _showForm = false;
+  }
+
+  void _startCreate() {
+    setState(() {
+      _editingIndex = null;
+      _showForm = true;
       _nameController.clear();
       _commentController.clear();
       _commentEnabled = false;
@@ -103,9 +136,28 @@ class _RemindersScreenState extends State<RemindersScreen> {
       _selectedDate = DateTime.now();
       _selectedTime = TimeOfDay.now();
     });
+  }
 
+  void _editReminder(int index) {
+    final reminder = _reminders[index];
+    setState(() {
+      _editingIndex = index;
+      _showForm = true;
+      _nameController.text = reminder.name;
+      _selectedFrequency = reminder.frequency;
+      _selectedDate = reminder.date;
+      _selectedTime = reminder.time;
+      _commentEnabled = reminder.comment.isNotEmpty;
+      _commentController.text = reminder.comment;
+    });
+  }
+
+  void _deleteReminder(int index) {
+    setState(() {
+      _reminders.removeAt(index);
+    });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reminder saved')),
+      const SnackBar(content: Text('Reminder deleted')),
     );
   }
 
@@ -122,117 +174,163 @@ class _RemindersScreenState extends State<RemindersScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(
-            'Create a reminder',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Reminder name',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 16),
-          InputDecorator(
-            decoration: const InputDecoration(
-              labelText: 'Reminder frequency',
-              border: OutlineInputBorder(),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: _selectedFrequency,
-                isExpanded: true,
-                items: _frequencies
-                    .map(
-                      (frequency) => DropdownMenuItem(
-                        value: frequency,
-                        child: Text(frequency),
-                      ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value == null) {
-                    return;
-                  }
-                  setState(() {
-                    _selectedFrequency = value;
-                  });
-                },
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: TextField(
-                  readOnly: true,
-                  onTap: _pickDate,
-                  decoration: InputDecoration(
-                    labelText: 'Date',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: const Icon(Icons.calendar_today_outlined),
-                    hintText: _formattedDate(),
-                  ),
-                ),
+              Text(
+                'Saved reminders',
+                style: Theme.of(context).textTheme.titleLarge,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: TextField(
-                  readOnly: true,
-                  onTap: _pickTime,
-                  decoration: InputDecoration(
-                    labelText: 'Time',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: const Icon(Icons.access_time_outlined),
-                    hintText: _formattedTime(context),
-                  ),
-                ),
+              FilledButton.icon(
+                onPressed: _startCreate,
+                icon: const Icon(Icons.add),
+                label: const Text('Create'),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          SwitchListTile(
-            value: _commentEnabled,
-            onChanged: (value) {
-              setState(() {
-                _commentEnabled = value;
-                if (!value) {
-                  _commentController.clear();
-                }
-              });
-            },
-            title: const Text('Comment option'),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _commentController,
-            enabled: _commentEnabled,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              labelText: 'Comment',
-              border: OutlineInputBorder(),
+          if (_showForm)
+            Card(
+              margin: const EdgeInsets.only(bottom: 16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Text(
+                      _editingIndex == null
+                          ? 'Create a reminder'
+                          : 'Edit reminder',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Reminder name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Reminder frequency',
+                        border: OutlineInputBorder(),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedFrequency,
+                          isExpanded: true,
+                          items: _frequencies
+                              .map(
+                                (frequency) => DropdownMenuItem(
+                                  value: frequency,
+                                  child: Text(frequency),
+                                ),
+                              )
+                              .toList(),
+                          onChanged: (value) {
+                            if (value == null) {
+                              return;
+                            }
+                            setState(() {
+                              _selectedFrequency = value;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            onTap: _pickDate,
+                            decoration: InputDecoration(
+                              labelText: 'Date',
+                              border: const OutlineInputBorder(),
+                              suffixIcon:
+                                  const Icon(Icons.calendar_today_outlined),
+                              hintText: _formattedDate(),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            readOnly: true,
+                            onTap: _pickTime,
+                            decoration: InputDecoration(
+                              labelText: 'Time',
+                              border: const OutlineInputBorder(),
+                              suffixIcon:
+                                  const Icon(Icons.access_time_outlined),
+                              hintText: _formattedTime(context),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SwitchListTile(
+                      value: _commentEnabled,
+                      onChanged: (value) {
+                        setState(() {
+                          _commentEnabled = value;
+                          if (!value) {
+                            _commentController.clear();
+                          }
+                        });
+                      },
+                      title: const Text('Comment option'),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _commentController,
+                      enabled: _commentEnabled,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Comment',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: _saveReminder,
+                            icon:
+                                const Icon(Icons.notifications_active_outlined),
+                            label: Text(
+                              _editingIndex == null
+                                  ? 'Save reminder'
+                                  : 'Update reminder',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _resetFormState();
+                            });
+                          },
+                          child: const Text('Cancel'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
           const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _saveReminder,
-            icon: const Icon(Icons.notifications_active_outlined),
-            label: const Text('Save reminder'),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Saved reminders',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 12),
           if (_reminders.isEmpty)
             const Text('No reminders yet.')
           else
-            ..._reminders.map(
-              (reminder) => Card(
+            ...List.generate(_reminders.length, (index) {
+              final reminder = _reminders[index];
+              return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
                   leading: const Icon(Icons.notifications_outlined),
@@ -249,9 +347,22 @@ class _RemindersScreenState extends State<RemindersScreen> {
                         Text(reminder.comment),
                     ],
                   ),
+                  trailing: Wrap(
+                    spacing: 8,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: () => _editReminder(index),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        onPressed: () => _deleteReminder(index),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+            }),
         ],
       ),
     );
