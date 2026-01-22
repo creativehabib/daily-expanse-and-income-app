@@ -159,7 +159,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           title: const Text('Reset all data?'),
           content: const Text(
             'This will remove all transactions, budgets, and settings. '
-            'Default categories and sample entries will be restored.',
+            'Default categories will be restored.',
           ),
           actions: [
             TextButton(
