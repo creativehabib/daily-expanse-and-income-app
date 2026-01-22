@@ -320,9 +320,7 @@ Future<void> main() async {
   await HiveService.init();
 
   final categoryRepository = CategoryRepository();
-  final transactionRepository = TransactionRepository();
   await categoryRepository.seedDefaultCategories();
-  await transactionRepository.seedSampleTransactions();
 
   runApp(const ProviderScope(child: ExpenseApp()));
 }

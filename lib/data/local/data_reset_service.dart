@@ -4,7 +4,6 @@ import '../../domain/models/app_settings.dart';
 import '../local/hive_service.dart';
 import '../repositories/category_repository.dart';
 import '../repositories/settings_repository.dart';
-import '../repositories/transaction_repository.dart';
 
 class DataResetService {
   Future<void> resetToDefaults() async {
@@ -21,11 +20,9 @@ class DataResetService {
     ]);
 
     final categoryRepository = CategoryRepository();
-    final transactionRepository = TransactionRepository();
     final settingsRepository = SettingsRepository();
 
     await categoryRepository.seedDefaultCategories();
-    await transactionRepository.seedSampleTransactions();
     await settingsRepository.saveSettings(AppSettings.defaults);
   }
 }
