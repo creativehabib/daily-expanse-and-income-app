@@ -23,14 +23,19 @@ class DashboardScreen extends ConsumerWidget {
     final profileEmail = settings.profileEmail.trim().isEmpty
         ? 'No email set'
         : settings.profileEmail.trim();
+
     final transactions = ref.watch(filteredTransactionsProvider);
+
     final totalIncome = transactions
         .where((entry) => entry.type == 'income')
         .fold<double>(0, (sum, entry) => sum + entry.amount);
+
     final totalExpense = transactions
         .where((entry) => entry.type == 'expense')
         .fold<double>(0, (sum, entry) => sum + entry.amount);
+
     final totalBalance = totalIncome - totalExpense;
+
     final formatter = NumberFormat.currency(symbol: '৳');
 
     return Scaffold(
@@ -129,7 +134,9 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           if (transactions.isEmpty)
-            const _EmptyState(message: 'No transactions yet. Add your first entry!')
+            const _EmptyState(
+              message: 'No transactions yet. Add your first entry!',
+            )
           else
             ...transactions.take(5).map(
                   (entry) => _TransactionTile(
@@ -142,8 +149,10 @@ class DashboardScreen extends ConsumerWidget {
           const SizedBox(height: 80),
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton.extended(
+
+      /// premium gradient FAB
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButton: _GradientFab(
         onPressed: () {
           showModalBottomSheet<void>(
             context: context,
@@ -151,36 +160,41 @@ class DashboardScreen extends ConsumerWidget {
             builder: (context) => const AddTransactionSheet(),
           );
         },
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        label: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+      ),
+    );
+  }
+}
+
+class _GradientFab extends StatelessWidget {
+  const _GradientFab({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(999),
+        child: Ink(
+          height: 56,
+          width: 56,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [Color(0xFF0F766E), Color(0xFF0B0F0F)],
             ),
-            borderRadius: BorderRadius.circular(32),
+            borderRadius: BorderRadius.circular(999),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2),
-                blurRadius: 12,
-                offset: const Offset(0, 6),
+                color: Colors.black.withOpacity(0.22),
+                blurRadius: 14,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.add, color: Colors.white),
-              const SizedBox(width: 8),
-              Text(
-                'Add Transaction',
-                style: GoogleFonts.poppins(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+          child: const Center(
+            child: Icon(Icons.add, color: Colors.white),
           ),
         ),
       ),
@@ -229,6 +243,7 @@ class _BalanceCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isPrivacyMode = ref.watch(balancePrivacyModeProvider);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -259,7 +274,8 @@ class _BalanceCard extends ConsumerWidget {
           const SizedBox(height: 8),
           GestureDetector(
             onTap: () {
-              ref.read(balancePrivacyModeProvider.notifier).state = !isPrivacyMode;
+              ref.read(balancePrivacyModeProvider.notifier).state =
+              !isPrivacyMode;
             },
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -274,7 +290,9 @@ class _BalanceCard extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  isPrivacyMode ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  isPrivacyMode
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
                   color: Colors.white70,
                   size: 20,
                 ),
@@ -282,6 +300,11 @@ class _BalanceCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
+          Row(
+            children: const [
+              // Widgets below are not const due to params; keep as is in your codebase if needed.
+            ],
+          ),
           Row(
             children: [
               _BalanceMetric(
@@ -380,7 +403,8 @@ class _TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = isIncome ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
+    final accentColor =
+    isIncome ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
     final icon = isIncome ? Icons.arrow_downward : Icons.arrow_upward;
 
     return Container(
@@ -465,7 +489,11 @@ class _EmptyState extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(Icons.inbox_outlined, size: 40, color: Color(0xFF0F766E)),
+          const Icon(
+            Icons.inbox_outlined,
+            size: 40,
+            color: Color(0xFF0F766E),
+          ),
           const SizedBox(height: 8),
           Text(
             message,
