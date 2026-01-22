@@ -15,6 +15,7 @@ class AddTransactionSheet extends ConsumerStatefulWidget {
 class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   final _formKey = GlobalKey<FormState>();
   final _amountController = TextEditingController();
+  final _amountFocusNode = FocusNode();
   final _noteController = TextEditingController();
   String _type = 'expense';
   String? _categoryId;
@@ -22,6 +23,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   @override
   void dispose() {
     _amountController.dispose();
+    _amountFocusNode.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -58,9 +60,17 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _amountController,
-              decoration: const InputDecoration(
+              focusNode: _amountFocusNode,
+              decoration: InputDecoration(
                 labelText: 'Amount',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.calculate),
+                  tooltip: 'Calculator',
+                  onPressed: () {
+                    FocusScope.of(context).requestFocus(_amountFocusNode);
+                  },
+                ),
               ),
               keyboardType: TextInputType.number,
               validator: (value) {
