@@ -33,6 +33,8 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider);
+    final settings = ref.watch(settingsProvider);
+    final currencySymbol = _currencySymbol(settings.currency);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -75,7 +77,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
                 labelText: 'Amount',
-                prefixText: '\$ ', // Or your currency symbol
+                prefixText: currencySymbol.isEmpty ? null : '$currencySymbol ',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 suffixIcon: Container(
@@ -527,6 +529,19 @@ enum _ButtonStyle { standard, secondary, operator, error }
 // -----------------------------------------------------------------------------
 // LOGIC UTILS (Kept mostly similar, just robustified)
 // -----------------------------------------------------------------------------
+
+String _currencySymbol(String currency) {
+  switch (currency) {
+    case 'BDT':
+      return '৳';
+    case 'USD':
+      return r'$';
+    case 'EUR':
+      return '€';
+    default:
+      return currency;
+  }
+}
 
 String _formatNumber(double value) {
   if (value == value.roundToDouble()) {
