@@ -181,23 +181,41 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            Row(
+              children: [
+                Text(
+                  'Calculator',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  tooltip: 'Close',
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colorScheme.outlineVariant),
               ),
               child: Text(
                 _expression.isEmpty ? '0' : _expression,
                 textAlign: TextAlign.end,
-                style: Theme.of(context).textTheme.headlineSmall,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
               ),
             ),
             const SizedBox(height: 12),
@@ -207,27 +225,33 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
               physics: const NeverScrollableScrollPhysics(),
+              childAspectRatio: 1.25,
               children: [
-                _buildButton('AC', _clear),
-                _buildButton('⌫', _backspace),
-                _buildButton('%', _percent),
-                _buildButton('÷', () => _append('÷')),
+                _buildButton('AC', _clear, style: _ButtonStyle.secondary),
+                _buildButton('⌫', _backspace, style: _ButtonStyle.secondary),
+                _buildButton('%', _percent, style: _ButtonStyle.secondary),
+                _buildButton('÷', () => _append('÷'),
+                    style: _ButtonStyle.operator),
                 _buildButton('7', () => _append('7')),
                 _buildButton('8', () => _append('8')),
                 _buildButton('9', () => _append('9')),
-                _buildButton('×', () => _append('×')),
+                _buildButton('×', () => _append('×'),
+                    style: _ButtonStyle.operator),
                 _buildButton('4', () => _append('4')),
                 _buildButton('5', () => _append('5')),
                 _buildButton('6', () => _append('6')),
-                _buildButton('-', () => _append('-')),
+                _buildButton('-', () => _append('-'),
+                    style: _ButtonStyle.operator),
                 _buildButton('1', () => _append('1')),
                 _buildButton('2', () => _append('2')),
                 _buildButton('3', () => _append('3')),
-                _buildButton('+', () => _append('+')),
-                _buildButton('.', () => _append('.')),
+                _buildButton('+', () => _append('+'),
+                    style: _ButtonStyle.operator),
+                _buildButton('.', () => _append('.'),
+                    style: _ButtonStyle.secondary),
                 _buildButton('0', () => _append('0')),
-                _buildButton('=', _evaluate),
-                _buildButton('OK', _submit, isPrimary: true),
+                _buildButton('=', _evaluate, style: _ButtonStyle.operator),
+                _buildButton('OK', _submit, style: _ButtonStyle.primary),
               ],
             ),
           ],
@@ -236,16 +260,41 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
     );
   }
 
-  Widget _buildButton(String label, VoidCallback onPressed,
-      {bool isPrimary = false}) {
+  Widget _buildButton(
+    String label,
+    VoidCallback onPressed, {
+    _ButtonStyle style = _ButtonStyle.standard,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
+    Color backgroundColor;
+    Color foregroundColor;
+
+    switch (style) {
+      case _ButtonStyle.primary:
+        backgroundColor = colorScheme.primary;
+        foregroundColor = colorScheme.onPrimary;
+        break;
+      case _ButtonStyle.operator:
+        backgroundColor = colorScheme.primaryContainer;
+        foregroundColor = colorScheme.onPrimaryContainer;
+        break;
+      case _ButtonStyle.secondary:
+        backgroundColor = colorScheme.surfaceContainerHighest;
+        foregroundColor = colorScheme.onSurface;
+        break;
+      case _ButtonStyle.standard:
+        backgroundColor = colorScheme.surface;
+        foregroundColor = colorScheme.onSurface;
+        break;
+    }
+
     return FilledButton(
       style: FilledButton.styleFrom(
-        backgroundColor: isPrimary
-            ? colorScheme.primary
-            : colorScheme.surfaceContainerHighest,
-        foregroundColor: isPrimary ? colorScheme.onPrimary : colorScheme.onSurface,
-        padding: const EdgeInsets.symmetric(vertical: 14),
+        backgroundColor: backgroundColor,
+        foregroundColor: foregroundColor,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        textStyle: Theme.of(context).textTheme.titleMedium,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       onPressed: onPressed,
       child: Text(label),
@@ -302,6 +351,8 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
     Navigator.of(context).pop(value);
   }
 }
+
+enum _ButtonStyle { standard, secondary, operator, primary }
 
 double? _evaluateExpression(String expression) {
   if (expression.trim().isEmpty) {
