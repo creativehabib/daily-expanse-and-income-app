@@ -358,24 +358,28 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
                               flex: 2,
                               child: Padding(
                                 padding: EdgeInsets.only(left: rowSpacing),
-                                child: FilledButton(
-                                  onPressed: () {
-                                    HapticFeedback.mediumImpact();
-                                    _submit();
-                                  },
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: colorScheme.primary,
-                                    foregroundColor: colorScheme.onPrimary,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(24),
+                                child: SizedBox(
+                                  height: buttonSize,
+                                  child: FilledButton(
+                                    onPressed: () {
+                                      HapticFeedback.mediumImpact();
+                                      _submit();
+                                    },
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: colorScheme.primary,
+                                      foregroundColor: colorScheme.onPrimary,
+                                      minimumSize: Size.fromHeight(buttonSize),
+                                      padding: EdgeInsets.zero,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(24),
+                                      ),
                                     ),
-                                    padding: EdgeInsets.symmetric(vertical: buttonSize / 2.5),
-                                  ),
-                                  child: Text(
-                                    'OK',
-                                    style: theme.textTheme.titleLarge?.copyWith(
-                                      color: colorScheme.onPrimary,
-                                      fontWeight: FontWeight.bold,
+                                    child: Text(
+                                      'OK',
+                                      style: theme.textTheme.titleLarge?.copyWith(
+                                        color: colorScheme.onPrimary,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ),
