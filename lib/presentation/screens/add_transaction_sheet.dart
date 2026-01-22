@@ -232,166 +232,168 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
         color: colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
-      child: Column(
-        children: [
-          // Drag Handle
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            // Drag Handle
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
 
-          // Display Area
-          Flexible(
-            flex: 2,
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: isCompact ? 16 : 24,
-                vertical: isCompact ? 12 : 16,
-              ),
-              alignment: Alignment.bottomRight,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  // The equation text
-                  Text(
-                    _expression,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.end,
-                    style: theme.textTheme.displaySmall?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w400,
-                      fontSize: expressionFontSize,
-                    ),
-                  ),
-                  SizedBox(height: isCompact ? 4 : 8),
-                  // The live preview text
-                  if (_liveResult.isNotEmpty && _liveResult != _expression)
+            // Display Area
+            Flexible(
+              flex: 2,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isCompact ? 16 : 24,
+                  vertical: isCompact ? 12 : 16,
+                ),
+                alignment: Alignment.bottomRight,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    // The equation text
                     Text(
-                      '= $_liveResult',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        color: colorScheme.secondary,
-                        fontWeight: FontWeight.w500,
-                        fontSize: resultFontSize,
+                      _expression,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.end,
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w400,
+                        fontSize: expressionFontSize,
                       ),
                     ),
-                ],
+                    SizedBox(height: isCompact ? 4 : 8),
+                    // The live preview text
+                    if (_liveResult.isNotEmpty && _liveResult != _expression)
+                      Text(
+                        '= $_liveResult',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: colorScheme.secondary,
+                          fontWeight: FontWeight.w500,
+                          fontSize: resultFontSize,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          const Divider(height: 1),
+            const Divider(height: 1),
 
-          // Keypad Area
-          Expanded(
-            flex: 5,
-            child: Padding(
-              padding: EdgeInsets.all(keypadPadding),
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final widthBased = (constraints.maxWidth - (rowSpacing * 3)) / 4;
-                  final heightBased = (constraints.maxHeight - (rowSpacing * 4)) / 5;
-                  final buttonSize = widthBased < heightBased ? widthBased : heightBased;
+            // Keypad Area
+            Expanded(
+              flex: 5,
+              child: Padding(
+                padding: EdgeInsets.all(keypadPadding),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final widthBased = (constraints.maxWidth - (rowSpacing * 3)) / 4;
+                    final heightBased = (constraints.maxHeight - (rowSpacing * 4)) / 5;
+                    final buttonSize = widthBased < heightBased ? widthBased : heightBased;
 
-                  return Column(
-                    children: [
-                      _buildRow(
-                        children: [
-                          _buildButton('C', _clear, style: _ButtonStyle.error),
-                          _buildButton('⌫', _backspace, style: _ButtonStyle.secondary),
-                          _buildButton('%', _percent, style: _ButtonStyle.secondary),
-                          _buildButton('÷', () => _append('÷'), style: _ButtonStyle.operator),
-                        ],
-                        size: buttonSize,
-                        spacing: rowSpacing,
-                      ),
-                      SizedBox(height: rowSpacing),
-                      _buildRow(
-                        children: [
-                          _buildButton('7', () => _append('7')),
-                          _buildButton('8', () => _append('8')),
-                          _buildButton('9', () => _append('9')),
-                          _buildButton('×', () => _append('×'), style: _ButtonStyle.operator),
-                        ],
-                        size: buttonSize,
-                        spacing: rowSpacing,
-                      ),
-                      SizedBox(height: rowSpacing),
-                      _buildRow(
-                        children: [
-                          _buildButton('4', () => _append('4')),
-                          _buildButton('5', () => _append('5')),
-                          _buildButton('6', () => _append('6')),
-                          _buildButton('-', () => _append('-'), style: _ButtonStyle.operator),
-                        ],
-                        size: buttonSize,
-                        spacing: rowSpacing,
-                      ),
-                      SizedBox(height: rowSpacing),
-                      _buildRow(
-                        children: [
-                          _buildButton('1', () => _append('1')),
-                          _buildButton('2', () => _append('2')),
-                          _buildButton('3', () => _append('3')),
-                          _buildButton('+', () => _append('+'), style: _ButtonStyle.operator),
-                        ],
-                        size: buttonSize,
-                        spacing: rowSpacing,
-                      ),
-                      SizedBox(height: rowSpacing),
-                      _buildRow(
-                        children: [
-                          _buildButton('.', () => _append('.')),
-                          _buildButton('0', () => _append('0')),
-                          // Equal / OK button combo
-                          Expanded(
-                            flex: 2,
-                            child: Padding(
-                              padding: EdgeInsets.only(left: rowSpacing),
-                              child: FilledButton(
-                                onPressed: () {
-                                  HapticFeedback.mediumImpact();
-                                  _submit();
-                                },
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: colorScheme.primary,
-                                  foregroundColor: colorScheme.onPrimary,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(24),
+                    return Column(
+                      children: [
+                        _buildRow(
+                          children: [
+                            _buildButton('C', _clear, style: _ButtonStyle.error),
+                            _buildButton('⌫', _backspace, style: _ButtonStyle.secondary),
+                            _buildButton('%', _percent, style: _ButtonStyle.secondary),
+                            _buildButton('÷', () => _append('÷'), style: _ButtonStyle.operator),
+                          ],
+                          size: buttonSize,
+                          spacing: rowSpacing,
+                        ),
+                        SizedBox(height: rowSpacing),
+                        _buildRow(
+                          children: [
+                            _buildButton('7', () => _append('7')),
+                            _buildButton('8', () => _append('8')),
+                            _buildButton('9', () => _append('9')),
+                            _buildButton('×', () => _append('×'), style: _ButtonStyle.operator),
+                          ],
+                          size: buttonSize,
+                          spacing: rowSpacing,
+                        ),
+                        SizedBox(height: rowSpacing),
+                        _buildRow(
+                          children: [
+                            _buildButton('4', () => _append('4')),
+                            _buildButton('5', () => _append('5')),
+                            _buildButton('6', () => _append('6')),
+                            _buildButton('-', () => _append('-'), style: _ButtonStyle.operator),
+                          ],
+                          size: buttonSize,
+                          spacing: rowSpacing,
+                        ),
+                        SizedBox(height: rowSpacing),
+                        _buildRow(
+                          children: [
+                            _buildButton('1', () => _append('1')),
+                            _buildButton('2', () => _append('2')),
+                            _buildButton('3', () => _append('3')),
+                            _buildButton('+', () => _append('+'), style: _ButtonStyle.operator),
+                          ],
+                          size: buttonSize,
+                          spacing: rowSpacing,
+                        ),
+                        SizedBox(height: rowSpacing),
+                        _buildRow(
+                          children: [
+                            _buildButton('.', () => _append('.')),
+                            _buildButton('0', () => _append('0')),
+                            // Equal / OK button combo
+                            Expanded(
+                              flex: 2,
+                              child: Padding(
+                                padding: EdgeInsets.only(left: rowSpacing),
+                                child: FilledButton(
+                                  onPressed: () {
+                                    HapticFeedback.mediumImpact();
+                                    _submit();
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: colorScheme.primary,
+                                    foregroundColor: colorScheme.onPrimary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                    padding: EdgeInsets.symmetric(vertical: buttonSize / 2.5),
                                   ),
-                                  padding: EdgeInsets.symmetric(vertical: buttonSize / 2.5),
-                                ),
-                                child: Text(
-                                  'OK',
-                                  style: theme.textTheme.titleLarge?.copyWith(
-                                    color: colorScheme.onPrimary,
-                                    fontWeight: FontWeight.bold,
+                                  child: Text(
+                                    'OK',
+                                    style: theme.textTheme.titleLarge?.copyWith(
+                                      color: colorScheme.onPrimary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                        size: buttonSize,
-                        spacing: rowSpacing,
-                        isLastRow: true,
-                      ),
-                    ],
-                  );
-                },
+                          ],
+                          size: buttonSize,
+                          spacing: rowSpacing,
+                          isLastRow: true,
+                        ),
+                      ],
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-          SizedBox(height: MediaQuery.of(context).padding.bottom),
         ],
+        ),
       ),
     );
   }
