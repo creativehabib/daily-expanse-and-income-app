@@ -309,60 +309,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               icon: const Icon(Icons.restart_alt),
               label: Text(_resettingData ? 'Resetting...' : 'Factory reset'),
             ),
-            const SizedBox(height: 24),
-            Text(
-              'About',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Daily Expanse & Income',
-                      style: Theme.of(context).textTheme.titleSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Track daily income, expenses, and budgets with quick '
-                      'insights into your spending patterns.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Version 1.0.0',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Contact',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Card(
-              child: Column(
-                children: const [
-                  ListTile(
-                    leading: Icon(Icons.email_outlined),
-                    title: Text('support@dailyexpanse.app'),
-                    subtitle: Text('Email support'),
-                  ),
-                  Divider(height: 0),
-                  ListTile(
-                    leading: Icon(Icons.public),
-                    title: Text('www.dailyexpanse.app'),
-                    subtitle: Text('Visit our website'),
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),

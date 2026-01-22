@@ -22,14 +22,20 @@ class ContactScreen extends StatelessWidget {
             child: Column(
               children: const [
                 ListTile(
+                  leading: Icon(Icons.man_outlined),
+                  title: Text('Habibur Rahaman'),
+                  subtitle: Text('Web & App Developer'),
+                ),
+                Divider(height: 0),
+                ListTile(
                   leading: Icon(Icons.email_outlined),
-                  title: Text('support@dailyexpanse.app'),
+                  title: Text('iamhabibnu@gmail.com'),
                   subtitle: Text('Email support'),
                 ),
                 Divider(height: 0),
                 ListTile(
                   leading: Icon(Icons.public),
-                  title: Text('www.dailyexpanse.app'),
+                  title: Text('www.creativehabib.com'),
                   subtitle: Text('Visit our website'),
                 ),
               ],
