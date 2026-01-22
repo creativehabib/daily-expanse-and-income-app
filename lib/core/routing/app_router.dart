@@ -7,6 +7,7 @@ import '../../presentation/screens/about_screen.dart';
 import '../../presentation/screens/contact_screen.dart';
 import '../../presentation/screens/export_data_screen.dart';
 import '../../presentation/screens/reports_screen.dart';
+import '../../presentation/screens/reminders_screen.dart';
 import '../../presentation/screens/settings_screen.dart';
 
 class AppRouter {
@@ -39,6 +40,10 @@ class AppRouter {
       GoRoute(
         path: '/export',
         builder: (context, state) => const ExportDataScreen(),
+      ),
+      GoRoute(
+        path: '/reminders',
+        builder: (context, state) => const RemindersScreen(),
       ),
       GoRoute(
         path: '/settings',
