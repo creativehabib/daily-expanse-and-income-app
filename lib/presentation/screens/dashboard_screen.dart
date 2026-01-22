@@ -458,19 +458,32 @@ class _TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final accentColor =
         isIncome ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
+    final cardColor =
+        isDark ? colorScheme.surfaceVariant : colorScheme.surface;
+    final textColor = isDark ? colorScheme.onSurface : colorScheme.onSurface;
+    final secondaryTextColor = isDark
+        ? colorScheme.onSurface.withOpacity(0.7)
+        : colorScheme.onSurface.withOpacity(0.6);
+    final pillColor =
+        accentColor.withOpacity(isDark ? 0.2 : 0.12);
     final icon = isIncome ? Icons.arrow_downward : Icons.arrow_upward;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: isDark
+                ? Colors.black.withOpacity(0.2)
+                : Colors.black.withOpacity(0.06),
             blurRadius: 12,
             offset: const Offset(0, 8),
           ),
@@ -482,7 +495,7 @@ class _TransactionTile extends StatelessWidget {
             height: 46,
             width: 46,
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.12),
+              color: pillColor,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(icon, color: accentColor, size: 20),
@@ -496,6 +509,7 @@ class _TransactionTile extends StatelessWidget {
                   title,
                   style: GoogleFonts.poppins(
                     fontWeight: FontWeight.w600,
+                    color: textColor,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -506,14 +520,14 @@ class _TransactionTile extends StatelessWidget {
                     Icon(
                       Icons.calendar_today_outlined,
                       size: 12,
-                      color: Colors.grey.shade500,
+                      color: secondaryTextColor,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       date,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: secondaryTextColor,
                       ),
                     ),
                   ],
@@ -524,7 +538,7 @@ class _TransactionTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: accentColor.withOpacity(0.12),
+              color: pillColor,
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
