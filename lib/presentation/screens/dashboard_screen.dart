@@ -209,12 +209,12 @@ class DashboardScreen extends ConsumerWidget {
                 onTap: () => context.push('/transactions'),
               ),
             ),
-          const SizedBox(height: 120),
+          const SizedBox(height: 80),
         ],
       ),
 
       /// premium gradient FAB
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButton: _GradientFab(
         onPressed: () {
           showModalBottomSheet<void>(
@@ -223,9 +223,6 @@ class DashboardScreen extends ConsumerWidget {
             builder: (context) => const AddTransactionSheet(),
           );
         },
-      ),
-      bottomNavigationBar: _BottomNavBar(
-        onTap: (route) => context.go(route),
       ),
     );
   }
@@ -264,95 +261,6 @@ class _GradientFab extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _BottomNavBar extends StatelessWidget {
-  const _BottomNavBar({required this.onTap});
-
-  final ValueChanged<String> onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    const activeColor = Color(0xFF0F766E);
-    final inactiveColor = Colors.grey.shade400;
-    final theme = Theme.of(context);
-
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(26),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: BottomAppBar(
-            color: Colors.transparent,
-            elevation: 0,
-            shape: const CircularNotchedRectangle(),
-            notchMargin: 10,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _NavIconButton(
-                    icon: Icons.home_rounded,
-                    color: activeColor,
-                    onTap: () => onTap('/'),
-                  ),
-                  _NavIconButton(
-                    icon: Icons.analytics_outlined,
-                    color: inactiveColor,
-                    onTap: () => onTap('/reports'),
-                  ),
-                  const SizedBox(width: 52),
-                  _NavIconButton(
-                    icon: Icons.category_outlined,
-                    color: inactiveColor,
-                    onTap: () => onTap('/categories'),
-                  ),
-                  _NavIconButton(
-                    icon: Icons.account_balance_wallet_outlined,
-                    color: inactiveColor,
-                    onTap: () => onTap('/budget'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _NavIconButton extends StatelessWidget {
-  const _NavIconButton({
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      icon: Icon(icon, color: color),
-      onPressed: onTap,
-      splashRadius: 22,
     );
   }
 }
