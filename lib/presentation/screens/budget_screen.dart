@@ -27,6 +27,8 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final budgetAsync = ref.watch(budgetProvider);
     final transactions = ref.watch(transactionsProvider);
     final categories = ref.watch(categoriesProvider);
@@ -100,6 +102,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
             style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.w600,
+              color: colorScheme.onBackground,
             ),
           ),
           const SizedBox(height: 12),
@@ -213,6 +216,11 @@ class _BudgetSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final onPrimary = colorScheme.onPrimary;
+    final onPrimaryMuted = colorScheme.onPrimary.withOpacity(0.75);
+    final progressBackground = onPrimary.withOpacity(0.2);
     final hasBudget = totalBudget > 0;
     final remaining = TransactionCalculations.remainingBudget(
       totalBudget: totalBudget,
@@ -226,8 +234,8 @@ class _BudgetSummaryCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF4F46E5)],
+        gradient: LinearGradient(
+          colors: [colorScheme.primary, colorScheme.secondary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -244,7 +252,7 @@ class _BudgetSummaryCard extends StatelessWidget {
                   Text(
                     'Budgets Summary',
                     style: GoogleFonts.poppins(
-                      color: Colors.white,
+                      color: onPrimary,
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
@@ -253,7 +261,7 @@ class _BudgetSummaryCard extends StatelessWidget {
                   Text(
                     monthLabel,
                     style: GoogleFonts.poppins(
-                      color: Colors.white70,
+                      color: onPrimaryMuted,
                       fontSize: 12,
                     ),
                   ),
@@ -262,8 +270,8 @@ class _BudgetSummaryCard extends StatelessWidget {
               TextButton.icon(
                 onPressed: onEdit,
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.white24,
+                  foregroundColor: onPrimary,
+                  backgroundColor: onPrimary.withOpacity(0.2),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
                 icon: const Icon(Icons.edit, size: 16),
@@ -286,14 +294,14 @@ class _BudgetSummaryCard extends StatelessWidget {
                     CircularProgressIndicator(
                       value: hasBudget ? percentValue : 0.0,
                       strokeWidth: 8,
-                      backgroundColor: Colors.white24,
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                      backgroundColor: progressBackground,
+                      valueColor: AlwaysStoppedAnimation<Color>(onPrimary),
                     ),
                     Center(
                       child: Text(
                         '$percentLabel%',
                         style: GoogleFonts.poppins(
-                          color: Colors.white,
+                          color: onPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -309,7 +317,7 @@ class _BudgetSummaryCard extends StatelessWidget {
                     Text(
                       'My budget',
                       style: GoogleFonts.poppins(
-                        color: Colors.white70,
+                        color: onPrimaryMuted,
                         fontSize: 12,
                       ),
                     ),
@@ -317,7 +325,7 @@ class _BudgetSummaryCard extends StatelessWidget {
                     Text(
                       '${formatter.format(totalExpense)} from ${formatter.format(totalBudget)}',
                       style: GoogleFonts.poppins(
-                        color: Colors.white,
+                        color: onPrimary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -327,7 +335,7 @@ class _BudgetSummaryCard extends StatelessWidget {
                           ? '${formatter.format(remaining)} remaining'
                           : 'Set a budget to track remaining',
                       style: GoogleFonts.poppins(
-                        color: Colors.white70,
+                        color: onPrimaryMuted,
                         fontSize: 12,
                       ),
                     ),
@@ -369,17 +377,24 @@ class _CategorySpendTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final percent = totalExpense > 0 ? spending.amount / totalExpense : 0.0;
+    final percentValue = percent.clamp(0.0, 1.0).toDouble();
+
+    final iconBackground = spending.color.withOpacity(
+      theme.brightness == Brightness.dark ? 0.3 : 0.15,
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: theme.shadowColor.withOpacity(0.12),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -393,7 +408,7 @@ class _CategorySpendTile extends StatelessWidget {
                 height: 40,
                 width: 40,
                 decoration: BoxDecoration(
-                  color: spending.color.withOpacity(0.15),
+                  color: iconBackground,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(spending.icon, color: spending.color, size: 20),
@@ -405,14 +420,17 @@ class _CategorySpendTile extends StatelessWidget {
                   children: [
                     Text(
                       spending.name,
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       formatter.format(spending.amount),
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -420,7 +438,10 @@ class _CategorySpendTile extends StatelessWidget {
               ),
               Text(
                 '${(percent * 100).toStringAsFixed(0)}%',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ],
           ),
@@ -428,9 +449,9 @@ class _CategorySpendTile extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
-              value: percent.clamp(0, 1),
+              value: percentValue,
               minHeight: 6,
-              backgroundColor: spending.color.withOpacity(0.15),
+              backgroundColor: iconBackground,
               valueColor: AlwaysStoppedAnimation<Color>(spending.color),
             ),
           ),
@@ -447,20 +468,25 @@ class _EmptyBudgetState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
+        color: colorScheme.surfaceVariant,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
-          const Icon(Icons.receipt_long_outlined, color: Color(0xFF64748B)),
+          Icon(
+            Icons.receipt_long_outlined,
+            color: colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
-              style: GoogleFonts.poppins(color: const Color(0xFF64748B)),
+              style: GoogleFonts.poppins(color: colorScheme.onSurfaceVariant),
             ),
           ),
         ],
