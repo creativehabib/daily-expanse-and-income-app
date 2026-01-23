@@ -185,7 +185,7 @@ class DashboardScreen extends ConsumerWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: const Color(0xFF0F172A),
+                      color: const Color(0xFF808181),
                     ),
                   ),
                 ),
