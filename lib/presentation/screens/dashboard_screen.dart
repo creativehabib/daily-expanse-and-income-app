@@ -456,14 +456,20 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: (isDarkMode ? Colors.black : Colors.black).withOpacity(
+              isDarkMode ? 0.15 : 0.05,
+            ),
             blurRadius: 12,
             offset: const Offset(0, 8),
           ),
@@ -471,15 +477,17 @@ class _EmptyState extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             Icons.inbox_outlined,
             size: 40,
-            color: Color(0xFF0F766E),
+            color: colorScheme.primary,
           ),
           const SizedBox(height: 8),
           Text(
             message,
-            style: GoogleFonts.poppins(),
+            style: GoogleFonts.poppins(
+              color: colorScheme.onSurface,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
