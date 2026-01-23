@@ -218,7 +218,8 @@ class _BudgetSummaryCard extends StatelessWidget {
       totalBudget: totalBudget,
       totalExpense: totalExpense,
     );
-    final percent = hasBudget ? (totalExpense / totalBudget) : 0;
+    final percent = hasBudget ? (totalExpense / totalBudget) : 0.0;
+    final percentValue = percent.clamp(0.0, 1.0).toDouble();
     final percentLabel = hasBudget ? (percent * 100).toStringAsFixed(0) : '0';
 
     return Container(
@@ -283,7 +284,7 @@ class _BudgetSummaryCard extends StatelessWidget {
                   fit: StackFit.expand,
                   children: [
                     CircularProgressIndicator(
-                      value: hasBudget ? percent.clamp(0, 1) : 0,
+                      value: hasBudget ? percentValue : 0.0,
                       strokeWidth: 8,
                       backgroundColor: Colors.white24,
                       valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
