@@ -26,6 +26,8 @@ class DashboardScreen extends ConsumerWidget {
         : settings.profileEmail.trim();
 
     final transactions = ref.watch(filteredTransactionsProvider);
+    final orderedTransactions = [...transactions]
+      ..sort((a, b) => b.date.compareTo(a.date));
 
     final totalIncome = transactions
         .where((entry) => entry.type == 'income')
@@ -193,12 +195,12 @@ class DashboardScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          if (transactions.isEmpty)
+          if (orderedTransactions.isEmpty)
             const _EmptyState(
               message: 'No transactions yet. Add your first entry!',
             )
           else
-            ...transactions.take(5).map(
+            ...orderedTransactions.take(5).map(
                   (entry) => TransactionTile(
                 title: entry.note.isEmpty ? 'No note' : entry.note,
                 date: DateFormat.yMMMd().format(entry.date),
