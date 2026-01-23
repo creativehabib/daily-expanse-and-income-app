@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../domain/utils/transaction_calculations.dart';
 import '../providers/date_filter_provider.dart';
+import '../providers/providers.dart';
 import '../providers/reporting_providers.dart';
 import '../widgets/date_filter_bar.dart';
 
@@ -19,8 +20,30 @@ class ReportsScreen extends ConsumerWidget {
     final transactions = ref.watch(filteredTransactionsProvider);
     final summary = ref.watch(incomeExpenseSummaryProvider);
     final monthlySpending = ref.watch(monthlySpendingProvider);
+    final categories = ref.watch(categoriesProvider);
+    final expenseTransactions =
+        transactions.where((entry) => entry.type == 'expense').toList();
     final categoryTotals =
-        TransactionCalculations.categoryTotals(transactions, 'expense');
+        TransactionCalculations.categoryTotals(expenseTransactions, 'expense');
+    final categoryCounts = <String, int>{};
+    for (final entry in expenseTransactions) {
+      categoryCounts.update(entry.categoryId, (value) => value + 1,
+          ifAbsent: () => 1);
+    }
+    final categoryIndex = {for (final category in categories) category.id: category};
+    final categorySummary = categoryTotals.entries
+        .map(
+          (entry) => _CategorySummaryItem(
+            id: entry.key,
+            name: categoryIndex[entry.key]?.name ?? 'Unknown',
+            color: categoryIndex[entry.key]?.color,
+            icon: categoryIndex[entry.key]?.icon,
+            count: categoryCounts[entry.key] ?? 0,
+            total: entry.value,
+          ),
+        )
+        .toList()
+      ..sort((a, b) => b.total.compareTo(a.total));
     final formatter = NumberFormat.currency(symbol: '৳');
     final total = summary.income + summary.expense;
 
@@ -147,9 +170,12 @@ class ReportsScreen extends ConsumerWidget {
                 ),
               ),
             ),
-          Text('Top Categories', style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Category Summary',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
-          if (categoryTotals.isEmpty)
+          if (categorySummary.isEmpty)
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(16),
@@ -157,13 +183,88 @@ class ReportsScreen extends ConsumerWidget {
               ),
             )
           else
-            ...categoryTotals.entries.map(
-              (entry) => Card(
-                child: ListTile(
-                  title: Text('Category ${entry.key.substring(0, 6)}'),
-                  trailing: Text(formatter.format(entry.value)),
+            Column(
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('Summary'),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          height: 220,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              PieChart(
+                                PieChartData(
+                                  sections: _buildCategorySections(
+                                    categorySummary,
+                                  ),
+                                  centerSpaceRadius: 58,
+                                  sectionsSpace: 4,
+                                  startDegreeOffset: -90,
+                                ),
+                              ),
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Amount',
+                                    style:
+                                        Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    formatter.format(
+                                      categorySummary.fold<double>(
+                                        0,
+                                        (sum, item) => sum + item.total,
+                                      ),
+                                    ),
+                                    style:
+                                        Theme.of(context).textTheme.titleLarge,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          children: categorySummary.map((item) {
+                            return _LegendRow(
+                              color: item.resolvedColor,
+                              label: item.name,
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                ...categorySummary.map(
+                  (item) => Card(
+                    child: ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: item.resolvedColor.withOpacity(0.15),
+                        child: Icon(
+                          item.iconData,
+                          color: item.resolvedColor,
+                        ),
+                      ),
+                      title: Text(item.name),
+                      subtitle: Text('${item.count} transactions'),
+                      trailing: Text(formatter.format(item.total)),
+                    ),
+                  ),
+                ),
+              ],
             ),
           const SizedBox(height: 16),
         ],
@@ -258,4 +359,59 @@ class _LegendRow extends StatelessWidget {
       ],
     );
   }
+}
+
+class _CategorySummaryItem {
+  _CategorySummaryItem({
+    required this.id,
+    required this.name,
+    required this.color,
+    required this.icon,
+    required this.count,
+    required this.total,
+  });
+
+  final String id;
+  final String name;
+  final int? color;
+  final int? icon;
+  final int count;
+  final double total;
+
+  Color get resolvedColor {
+    if (color != null) {
+      return Color(color!);
+    }
+    const fallback = [
+      Color(0xFF2563EB),
+      Color(0xFFF59E0B),
+      Color(0xFF7C3AED),
+      Color(0xFF10B981),
+      Color(0xFFF97316),
+      Color(0xFF06B6D4),
+    ];
+    return fallback[id.hashCode.abs() % fallback.length];
+  }
+
+  IconData get iconData {
+    if (icon != null) {
+      return IconData(icon!, fontFamily: 'MaterialIcons');
+    }
+    return Icons.category;
+  }
+}
+
+List<PieChartSectionData> _buildCategorySections(
+  List<_CategorySummaryItem> items,
+) {
+  return items
+      .map(
+        (item) => PieChartSectionData(
+          value: item.total,
+          color: item.resolvedColor,
+          title: '',
+          radius: 48,
+        ),
+      )
+      .toList();
 }
