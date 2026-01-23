@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/local/hive_service.dart';
 import '../../services/notification_service.dart';
 
 class RemindersScreen extends StatefulWidget {
@@ -39,6 +41,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   void initState() {
     super.initState();
     _selectedFrequency = _frequencies.first;
+    _loadReminders();
   }
 
   @override
@@ -122,6 +125,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       date: _selectedDate,
       time: _selectedTime,
       comment: _commentEnabled ? _commentController.text.trim() : '',
+      createdAt: existingReminder?.createdAt ?? DateTime.now(),
     );
 
     var scheduleFailed = false;
@@ -150,6 +154,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       }
       _resetFormState();
     });
+    await _persistReminder(reminder);
 
     final message = scheduleFailed
         ? 'Reminder saved, but notification could not be scheduled'
@@ -233,10 +238,39 @@ class _RemindersScreenState extends State<RemindersScreen> {
     setState(() {
       _reminders.removeAt(index);
     });
+    await _removeReminder(reminder.id);
     await NotificationService.instance.cancelReminder(reminder.id);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Reminder deleted')),
     );
+  }
+
+  Future<void> _loadReminders() async {
+    final box = Hive.box<Map>(HiveService.reminderBox);
+    final reminders = box.values
+        .map(
+          (value) => _Reminder.fromMap(Map<String, dynamic>.from(value)),
+        )
+        .toList()
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _reminders
+        ..clear()
+        ..addAll(reminders);
+    });
+  }
+
+  Future<void> _persistReminder(_Reminder reminder) async {
+    final box = Hive.box<Map>(HiveService.reminderBox);
+    await box.put(reminder.id, reminder.toMap());
+  }
+
+  Future<void> _removeReminder(int id) async {
+    final box = Hive.box<Map>(HiveService.reminderBox);
+    await box.delete(id);
   }
 
   @override
@@ -461,6 +495,7 @@ class _Reminder {
     required this.date,
     required this.time,
     required this.comment,
+    required this.createdAt,
   });
 
   final int id;
@@ -469,4 +504,37 @@ class _Reminder {
   final DateTime date;
   final TimeOfDay time;
   final String comment;
+  final DateTime createdAt;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'frequency': frequency,
+      'date': date.millisecondsSinceEpoch,
+      'timeHour': time.hour,
+      'timeMinute': time.minute,
+      'comment': comment,
+      'createdAt': createdAt.millisecondsSinceEpoch,
+    };
+  }
+
+  factory _Reminder.fromMap(Map<String, dynamic> map) {
+    return _Reminder(
+      id: map['id'] as int,
+      name: map['name'] as String? ?? '',
+      frequency: map['frequency'] as String? ?? '',
+      date: DateTime.fromMillisecondsSinceEpoch(
+        map['date'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      ),
+      time: TimeOfDay(
+        hour: map['timeHour'] as int? ?? 0,
+        minute: map['timeMinute'] as int? ?? 0,
+      ),
+      comment: map['comment'] as String? ?? '',
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        map['createdAt'] as int? ?? DateTime.now().millisecondsSinceEpoch,
+      ),
+    );
+  }
 }

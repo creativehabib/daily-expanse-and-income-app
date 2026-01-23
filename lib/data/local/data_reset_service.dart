@@ -11,12 +11,14 @@ class DataResetService {
     final transactionBox = Hive.box<Map>(HiveService.transactionBox);
     final budgetBox = Hive.box<Map>(HiveService.budgetBox);
     final settingsBox = Hive.box<Map>(HiveService.settingsBox);
+    final reminderBox = Hive.box<Map>(HiveService.reminderBox);
 
     await Future.wait([
       categoryBox.clear(),
       transactionBox.clear(),
       budgetBox.clear(),
       settingsBox.clear(),
+      reminderBox.clear(),
     ]);
 
     final categoryRepository = CategoryRepository();

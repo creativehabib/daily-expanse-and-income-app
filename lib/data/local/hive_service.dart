@@ -5,6 +5,7 @@ class HiveService {
   static const String transactionBox = 'transactions';
   static const String budgetBox = 'budgets';
   static const String settingsBox = 'settings';
+  static const String reminderBox = 'reminders';
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -12,5 +13,6 @@ class HiveService {
     await Hive.openBox<Map>(transactionBox);
     await Hive.openBox<Map>(budgetBox);
     await Hive.openBox<Map>(settingsBox);
+    await Hive.openBox<Map>(reminderBox);
   }
 }
