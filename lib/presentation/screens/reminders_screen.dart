@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../services/notification_service.dart';
+
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
 
@@ -88,8 +90,27 @@ class _RemindersScreenState extends State<RemindersScreen> {
       return;
     }
 
+    final scheduledDateTime = DateTime(
+      _selectedDate.year,
+      _selectedDate.month,
+      _selectedDate.day,
+      _selectedTime.hour,
+      _selectedTime.minute,
+    );
+    if (scheduledDateTime.isBefore(DateTime.now())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please choose a future time')),
+      );
+      return;
+    }
+
     final isEditing = _editingIndex != null;
+    final existingReminder =
+        isEditing ? _reminders[_editingIndex!] : null;
+    final reminderId =
+        existingReminder?.id ?? NotificationService.instance.generateId();
     final reminder = _Reminder(
+      id: reminderId,
       name: name,
       frequency: _selectedFrequency,
       date: _selectedDate,
@@ -97,22 +118,36 @@ class _RemindersScreenState extends State<RemindersScreen> {
       comment: _commentEnabled ? _commentController.text.trim() : '',
     );
 
-    setState(() {
-      if (!isEditing) {
-        _reminders.insert(0, reminder);
-      } else {
-        _reminders[_editingIndex!] = reminder;
-      }
-      _resetFormState();
-    });
+    NotificationService.instance
+        .scheduleReminder(
+          id: reminderId,
+          title: reminder.name,
+          body: reminder.comment.isNotEmpty
+              ? reminder.comment
+              : 'It is time for your reminder.',
+          scheduledDateTime: scheduledDateTime,
+        )
+        .then((_) {
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            if (!isEditing) {
+              _reminders.insert(0, reminder);
+            } else {
+              _reminders[_editingIndex!] = reminder;
+            }
+            _resetFormState();
+          });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isEditing ? 'Reminder updated' : 'Reminder saved',
-        ),
-      ),
-    );
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isEditing ? 'Reminder updated' : 'Reminder saved',
+              ),
+            ),
+          );
+        });
   }
 
   void _resetFormState() {
@@ -181,6 +216,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     setState(() {
       _reminders.removeAt(index);
     });
+    await NotificationService.instance.cancelReminder(reminder.id);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Reminder deleted')),
     );
@@ -402,6 +438,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
 class _Reminder {
   _Reminder({
+    required this.id,
     required this.name,
     required this.frequency,
     required this.date,
@@ -409,6 +446,7 @@ class _Reminder {
     required this.comment,
   });
 
+  final int id;
   final String name;
   final String frequency;
   final DateTime date;
