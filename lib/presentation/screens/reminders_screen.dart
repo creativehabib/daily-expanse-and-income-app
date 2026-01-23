@@ -80,7 +80,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     return _selectedTime.format(context);
   }
 
-  void _saveReminder() {
+  Future<void> _saveReminder() async {
     FocusScope.of(context).unfocus();
     final name = _nameController.text.trim();
     if (name.isEmpty) {
@@ -118,36 +118,41 @@ class _RemindersScreenState extends State<RemindersScreen> {
       comment: _commentEnabled ? _commentController.text.trim() : '',
     );
 
-    NotificationService.instance
-        .scheduleReminder(
-          id: reminderId,
-          title: reminder.name,
-          body: reminder.comment.isNotEmpty
-              ? reminder.comment
-              : 'It is time for your reminder.',
-          scheduledDateTime: scheduledDateTime,
-        )
-        .then((_) {
-          if (!mounted) {
-            return;
-          }
-          setState(() {
-            if (!isEditing) {
-              _reminders.insert(0, reminder);
-            } else {
-              _reminders[_editingIndex!] = reminder;
-            }
-            _resetFormState();
-          });
+    var scheduleFailed = false;
+    try {
+      await NotificationService.instance.scheduleReminder(
+        id: reminderId,
+        title: reminder.name,
+        body: reminder.comment.isNotEmpty
+            ? reminder.comment
+            : 'It is time for your reminder.',
+        scheduledDateTime: scheduledDateTime,
+      );
+    } catch (_) {
+      scheduleFailed = true;
+    }
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                isEditing ? 'Reminder updated' : 'Reminder saved',
-              ),
-            ),
-          );
-        });
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      if (!isEditing) {
+        _reminders.insert(0, reminder);
+      } else {
+        _reminders[_editingIndex!] = reminder;
+      }
+      _resetFormState();
+    });
+
+    final message = scheduleFailed
+        ? 'Reminder saved, but notification could not be scheduled'
+        : isEditing
+            ? 'Reminder updated'
+            : 'Reminder saved';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   void _resetFormState() {
