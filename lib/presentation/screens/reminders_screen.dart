@@ -14,6 +14,8 @@ class RemindersScreen extends StatefulWidget {
 class _RemindersScreenState extends State<RemindersScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _timeController = TextEditingController();
   final List<String> _frequencies = const [
     'Once',
     'Daily',
@@ -43,6 +45,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
   void dispose() {
     _nameController.dispose();
     _commentController.dispose();
+    _dateController.dispose();
+    _timeController.dispose();
     super.dispose();
   }
 
@@ -56,6 +60,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
+        _dateController.text = _formattedDate();
       });
     }
   }
@@ -68,6 +73,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     if (picked != null) {
       setState(() {
         _selectedTime = picked;
+        _timeController.text = _formattedTime(context);
       });
     }
   }
@@ -158,6 +164,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
   void _resetFormState() {
     _nameController.clear();
     _commentController.clear();
+    _dateController.clear();
+    _timeController.clear();
     _commentEnabled = false;
     _selectedFrequency = _frequencies.first;
     _selectedDate = DateTime.now();
@@ -176,6 +184,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
       _selectedFrequency = _frequencies.first;
       _selectedDate = DateTime.now();
       _selectedTime = TimeOfDay.now();
+      _dateController.text = _formattedDate();
+      _timeController.text = _formattedTime(context);
     });
   }
 
@@ -188,6 +198,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
       _selectedFrequency = reminder.frequency;
       _selectedDate = reminder.date;
       _selectedTime = reminder.time;
+      _dateController.text = DateFormat.yMMMd().format(reminder.date);
+      _timeController.text = reminder.time.format(context);
       _commentEnabled = reminder.comment.isNotEmpty;
       _commentController.text = reminder.comment;
     });
@@ -316,6 +328,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       children: [
                         Expanded(
                           child: TextField(
+                            controller: _dateController,
                             readOnly: true,
                             onTap: _pickDate,
                             decoration: InputDecoration(
@@ -323,13 +336,13 @@ class _RemindersScreenState extends State<RemindersScreen> {
                               border: const OutlineInputBorder(),
                               suffixIcon:
                                   const Icon(Icons.calendar_today_outlined),
-                              hintText: _formattedDate(),
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: TextField(
+                            controller: _timeController,
                             readOnly: true,
                             onTap: _pickTime,
                             decoration: InputDecoration(
@@ -337,7 +350,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                               border: const OutlineInputBorder(),
                               suffixIcon:
                                   const Icon(Icons.access_time_outlined),
-                              hintText: _formattedTime(context),
                             ),
                           ),
                         ),
