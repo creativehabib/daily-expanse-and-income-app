@@ -26,13 +26,21 @@ class TransactionTile extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final accentColor =
         isIncome ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
-    final cardColor =
-        isDark ? colorScheme.surfaceVariant : colorScheme.surface;
-    final textColor = isDark ? colorScheme.onSurface : colorScheme.onSurface;
+    final cardColor = isDark
+        ? Color.alphaBlend(
+            colorScheme.surface.withOpacity(0.6),
+            colorScheme.surfaceVariant,
+          )
+        : colorScheme.surface;
+    final textColor =
+        isDark ? colorScheme.onSurface.withOpacity(0.95) : colorScheme.onSurface;
     final secondaryTextColor = isDark
         ? colorScheme.onSurface.withOpacity(0.7)
         : colorScheme.onSurface.withOpacity(0.6);
-    final pillColor = accentColor.withOpacity(isDark ? 0.2 : 0.12);
+    final pillColor = accentColor.withOpacity(isDark ? 0.24 : 0.12);
+    final borderColor = isDark
+        ? colorScheme.outline.withOpacity(0.35)
+        : colorScheme.outline.withOpacity(0.08);
     final icon = isIncome ? Icons.arrow_downward : Icons.arrow_upward;
 
     return Material(
@@ -46,12 +54,13 @@ class TransactionTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: cardColor,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: borderColor),
             boxShadow: [
               BoxShadow(
                 color: isDark
-                    ? Colors.black.withOpacity(0.2)
+                    ? Colors.black.withOpacity(0.35)
                     : Colors.black.withOpacity(0.06),
-                blurRadius: 12,
+                blurRadius: isDark ? 18 : 12,
                 offset: const Offset(0, 8),
               ),
             ],
