@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../providers/date_filter_provider.dart';
 import '../providers/providers.dart';
 import '../widgets/date_filter_bar.dart';
+import '../widgets/transaction_tile.dart';
 import 'add_transaction_sheet.dart';
 
 final balancePrivacyModeProvider = StateProvider<bool>((ref) => false);
@@ -130,62 +131,66 @@ class DashboardScreen extends ConsumerWidget {
             expense: formatter.format(totalExpense),
           ),
           const SizedBox(height: 24),
-          Row(
-            children: [
-              Container(
-                height: 36,
-                width: 36,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F766E).withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.history,
-                  color: Color(0xFF0F766E),
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Recent Transactions',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    Text(
-                      'Track your latest income & expense entries',
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  'Last 5',
-                  style: GoogleFonts.poppins(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF0F172A),
+          InkWell(
+            borderRadius: BorderRadius.circular(20),
+            onTap: () => context.push('/transactions'),
+            child: Row(
+              children: [
+                Container(
+                  height: 36,
+                  width: 36,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F766E).withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.history,
+                    color: Color(0xFF0F766E),
+                    size: 18,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Recent Transactions',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'Track your latest income & expense entries',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    'Last 5',
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 16),
           if (transactions.isEmpty)
@@ -194,11 +199,12 @@ class DashboardScreen extends ConsumerWidget {
             )
           else
             ...transactions.take(5).map(
-                  (entry) => _TransactionTile(
+                  (entry) => TransactionTile(
                 title: entry.note.isEmpty ? 'No note' : entry.note,
                 date: DateFormat.yMMMd().format(entry.date),
                 amount: formatter.format(entry.amount),
                 isIncome: entry.type == 'income',
+                onTap: () => context.push('/transactions'),
               ),
             ),
           const SizedBox(height: 80),
@@ -438,118 +444,6 @@ class _BalanceMetric extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _TransactionTile extends StatelessWidget {
-  const _TransactionTile({
-    required this.title,
-    required this.date,
-    required this.amount,
-    required this.isIncome,
-  });
-
-  final String title;
-  final String date;
-  final String amount;
-  final bool isIncome;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final accentColor =
-        isIncome ? const Color(0xFF16A34A) : const Color(0xFFDC2626);
-    final cardColor =
-        isDark ? colorScheme.surfaceVariant : colorScheme.surface;
-    final textColor = isDark ? colorScheme.onSurface : colorScheme.onSurface;
-    final secondaryTextColor = isDark
-        ? colorScheme.onSurface.withOpacity(0.7)
-        : colorScheme.onSurface.withOpacity(0.6);
-    final pillColor =
-        accentColor.withOpacity(isDark ? 0.2 : 0.12);
-    final icon = isIncome ? Icons.arrow_downward : Icons.arrow_upward;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withOpacity(0.2)
-                : Colors.black.withOpacity(0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 46,
-            width: 46,
-            decoration: BoxDecoration(
-              color: pillColor,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(icon, color: accentColor, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today_outlined,
-                      size: 12,
-                      color: secondaryTextColor,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      date,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: secondaryTextColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: pillColor,
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              amount,
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.w600,
-                color: accentColor,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -9,6 +9,7 @@ import '../../presentation/screens/export_data_screen.dart';
 import '../../presentation/screens/reports_screen.dart';
 import '../../presentation/screens/reminders_screen.dart';
 import '../../presentation/screens/settings_screen.dart';
+import '../../presentation/screens/recent_transactions_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -48,6 +49,10 @@ class AppRouter {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/transactions',
+        builder: (context, state) => const RecentTransactionsScreen(),
       ),
     ],
   );
