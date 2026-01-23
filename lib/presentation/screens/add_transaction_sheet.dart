@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 // Assuming these exist in your project structure
 import '../../domain/models/transaction_entry.dart';
 import '../providers/providers.dart';
+import '../utils/currency_utils.dart';
 
 class AddTransactionSheet extends ConsumerStatefulWidget {
   const AddTransactionSheet({super.key});
@@ -34,7 +35,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider);
     final settings = ref.watch(settingsProvider);
-    final currencySymbol = _currencySymbol(settings.currency);
+    final currencySymbol = currencySymbolFor(settings.currency);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -167,7 +168,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
       builder: (context) => _CalculatorSheet(initialValue: _amountController.text),
     );
     if (result != null) {
-      _amountController.text = _formatNumber(result);
+      _amountController.text = formatNumber(result);
       _amountFocusNode.requestFocus();
     }
   }
@@ -210,7 +211,7 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
 
     final val = _evaluateExpression(_expression);
     if (val != null) {
-      setState(() => _liveResult = _formatNumber(val));
+      setState(() => _liveResult = formatNumber(val));
     }
   }
 
@@ -519,7 +520,7 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
     final value = _evaluateExpression(_expression);
     if (value == null) return;
     setState(() {
-      _expression = _formatNumber(value / 100);
+      _expression = formatNumber(value / 100);
       _updateLiveResult();
     });
   }
@@ -539,27 +540,6 @@ enum _ButtonStyle { standard, secondary, operator, error }
 // -----------------------------------------------------------------------------
 // LOGIC UTILS (Kept mostly similar, just robustified)
 // -----------------------------------------------------------------------------
-
-String _currencySymbol(String currency) {
-  switch (currency) {
-    case 'BDT':
-      return '৳';
-    case 'USD':
-      return r'$';
-    case 'EUR':
-      return '€';
-    default:
-      return currency;
-  }
-}
-
-String _formatNumber(double value) {
-  if (value == value.roundToDouble()) {
-    return value.toStringAsFixed(0);
-  }
-  // Remove trailing zeros for decimals
-  return value.toString().replaceAll(RegExp(r'([.]*0)(?!.*\d)'), '');
-}
 
 double? _evaluateExpression(String expression) {
   try {
