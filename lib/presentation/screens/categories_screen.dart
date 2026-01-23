@@ -24,6 +24,31 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     super.dispose();
   }
 
+  Future<void> _confirmDeleteCategory(Category category) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete category?'),
+        content: Text('Delete "${category.name}"? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete == true && mounted) {
+      await ref.read(categoriesProvider.notifier).remove(category.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider);
@@ -117,9 +142,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                     ? const Icon(Icons.lock_outline)
                     : IconButton(
                         icon: const Icon(Icons.delete_outline),
-                        onPressed: () => ref
-                            .read(categoriesProvider.notifier)
-                            .remove(category.id),
+                        onPressed: () => _confirmDeleteCategory(category),
                       ),
               ),
             ),
