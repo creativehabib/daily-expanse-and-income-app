@@ -245,14 +245,6 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Icon(
-                        Icons.settings_outlined,
-                        color: colorScheme.outline,
-                        size: isCompact ? 20 : 24,
-                      ),
-                    ),
                     const Spacer(),
                     // The equation text
                     Text(
