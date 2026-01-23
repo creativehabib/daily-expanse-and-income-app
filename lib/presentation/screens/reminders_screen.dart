@@ -153,7 +153,31 @@ class _RemindersScreenState extends State<RemindersScreen> {
     });
   }
 
-  void _deleteReminder(int index) {
+  Future<void> _deleteReminder(int index) async {
+    final reminder = _reminders[index];
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete reminder?'),
+        content: Text('Delete "${reminder.name}"? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldDelete != true || !mounted) {
+      return;
+    }
+
     setState(() {
       _reminders.removeAt(index);
     });
