@@ -14,6 +14,8 @@ class RemindersScreen extends StatefulWidget {
 class _RemindersScreenState extends State<RemindersScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _timeController = TextEditingController();
   final List<String> _frequencies = const [
     'Once',
     'Daily',
@@ -43,6 +45,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
   void dispose() {
     _nameController.dispose();
     _commentController.dispose();
+    _dateController.dispose();
+    _timeController.dispose();
     super.dispose();
   }
 
@@ -56,6 +60,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     if (picked != null) {
       setState(() {
         _selectedDate = picked;
+        _dateController.text = _formattedDate();
       });
     }
   }
@@ -68,6 +73,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     if (picked != null) {
       setState(() {
         _selectedTime = picked;
+        _timeController.text = _formattedTime(context);
       });
     }
   }
@@ -80,7 +86,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     return _selectedTime.format(context);
   }
 
-  void _saveReminder() {
+  Future<void> _saveReminder() async {
     FocusScope.of(context).unfocus();
     final name = _nameController.text.trim();
     if (name.isEmpty) {
@@ -118,41 +124,48 @@ class _RemindersScreenState extends State<RemindersScreen> {
       comment: _commentEnabled ? _commentController.text.trim() : '',
     );
 
-    NotificationService.instance
-        .scheduleReminder(
-          id: reminderId,
-          title: reminder.name,
-          body: reminder.comment.isNotEmpty
-              ? reminder.comment
-              : 'It is time for your reminder.',
-          scheduledDateTime: scheduledDateTime,
-        )
-        .then((_) {
-          if (!mounted) {
-            return;
-          }
-          setState(() {
-            if (!isEditing) {
-              _reminders.insert(0, reminder);
-            } else {
-              _reminders[_editingIndex!] = reminder;
-            }
-            _resetFormState();
-          });
+    var scheduleFailed = false;
+    try {
+      await NotificationService.instance.scheduleReminder(
+        id: reminderId,
+        title: reminder.name,
+        body: reminder.comment.isNotEmpty
+            ? reminder.comment
+            : 'It is time for your reminder.',
+        scheduledDateTime: scheduledDateTime,
+      );
+    } catch (_) {
+      scheduleFailed = true;
+    }
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                isEditing ? 'Reminder updated' : 'Reminder saved',
-              ),
-            ),
-          );
-        });
+    if (!mounted) {
+      return;
+    }
+
+    setState(() {
+      if (!isEditing) {
+        _reminders.insert(0, reminder);
+      } else {
+        _reminders[_editingIndex!] = reminder;
+      }
+      _resetFormState();
+    });
+
+    final message = scheduleFailed
+        ? 'Reminder saved, but notification could not be scheduled'
+        : isEditing
+            ? 'Reminder updated'
+            : 'Reminder saved';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   void _resetFormState() {
     _nameController.clear();
     _commentController.clear();
+    _dateController.clear();
+    _timeController.clear();
     _commentEnabled = false;
     _selectedFrequency = _frequencies.first;
     _selectedDate = DateTime.now();
@@ -171,6 +184,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
       _selectedFrequency = _frequencies.first;
       _selectedDate = DateTime.now();
       _selectedTime = TimeOfDay.now();
+      _dateController.text = _formattedDate();
+      _timeController.text = _formattedTime(context);
     });
   }
 
@@ -183,6 +198,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
       _selectedFrequency = reminder.frequency;
       _selectedDate = reminder.date;
       _selectedTime = reminder.time;
+      _dateController.text = DateFormat.yMMMd().format(reminder.date);
+      _timeController.text = reminder.time.format(context);
       _commentEnabled = reminder.comment.isNotEmpty;
       _commentController.text = reminder.comment;
     });
@@ -311,6 +328,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       children: [
                         Expanded(
                           child: TextField(
+                            controller: _dateController,
                             readOnly: true,
                             onTap: _pickDate,
                             decoration: InputDecoration(
@@ -318,13 +336,13 @@ class _RemindersScreenState extends State<RemindersScreen> {
                               border: const OutlineInputBorder(),
                               suffixIcon:
                                   const Icon(Icons.calendar_today_outlined),
-                              hintText: _formattedDate(),
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: TextField(
+                            controller: _timeController,
                             readOnly: true,
                             onTap: _pickTime,
                             decoration: InputDecoration(
@@ -332,7 +350,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                               border: const OutlineInputBorder(),
                               suffixIcon:
                                   const Icon(Icons.access_time_outlined),
-                              hintText: _formattedTime(context),
                             ),
                           ),
                         ),
