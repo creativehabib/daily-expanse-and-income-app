@@ -379,24 +379,40 @@ class _CategorySpendTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final percent = totalExpense > 0 ? spending.amount / totalExpense : 0.0;
     final percentValue = percent.clamp(0.0, 1.0).toDouble();
 
-    final iconBackground = spending.color.withOpacity(
-      theme.brightness == Brightness.dark ? 0.3 : 0.15,
-    );
+    final cardColor = isDark
+        ? Color.alphaBlend(
+            colorScheme.surface.withOpacity(0.6),
+            colorScheme.surfaceVariant,
+          )
+        : colorScheme.surface;
+    final borderColor = isDark
+        ? colorScheme.outline.withOpacity(0.35)
+        : colorScheme.outline.withOpacity(0.08);
+    final textColor =
+        isDark ? colorScheme.onSurface.withOpacity(0.95) : colorScheme.onSurface;
+    final secondaryTextColor = isDark
+        ? colorScheme.onSurface.withOpacity(0.7)
+        : colorScheme.onSurface.withOpacity(0.6);
+    final iconBackground = spending.color.withOpacity(isDark ? 0.24 : 0.12);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: theme.cardColor,
-        borderRadius: BorderRadius.circular(16),
+        color: cardColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor.withOpacity(0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+            color: isDark
+                ? Colors.black.withOpacity(0.35)
+                : Colors.black.withOpacity(0.06),
+            blurRadius: isDark ? 18 : 12,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -422,7 +438,7 @@ class _CategorySpendTile extends StatelessWidget {
                       spending.name,
                       style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
+                        color: textColor,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -430,7 +446,7 @@ class _CategorySpendTile extends StatelessWidget {
                       formatter.format(spending.amount),
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: colorScheme.onSurfaceVariant,
+                        color: secondaryTextColor,
                       ),
                     ),
                   ],
@@ -440,7 +456,7 @@ class _CategorySpendTile extends StatelessWidget {
                 '${(percent * 100).toStringAsFixed(0)}%',
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+                  color: textColor,
                 ),
               ),
             ],
