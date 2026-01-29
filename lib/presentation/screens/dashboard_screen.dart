@@ -50,7 +50,7 @@ class DashboardScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.analytics_outlined),
-            onPressed: () => context.go('/reports'),
+            onPressed: () => context.push('/reports'),
           ),
         ],
       ),
@@ -82,27 +82,27 @@ class DashboardScreen extends ConsumerWidget {
             _DrawerTile(
               icon: Icons.analytics_outlined,
               label: 'Reports',
-              onTap: () => context.go('/reports'),
+              onTap: () => context.push('/reports'),
             ),
             _DrawerTile(
               icon: Icons.category_outlined,
               label: 'Categories',
-              onTap: () => context.go('/categories'),
+              onTap: () => context.push('/categories'),
             ),
             _DrawerTile(
               icon: Icons.account_balance_wallet_outlined,
               label: 'Budget',
-              onTap: () => context.go('/budget'),
+              onTap: () => context.push('/budget'),
             ),
             _DrawerTile(
               icon: Icons.notifications_outlined,
               label: 'Reminders',
-              onTap: () => context.go('/reminders'),
+              onTap: () => context.push('/reminders'),
             ),
             _DrawerTile(
               icon: Icons.upload_file_outlined,
               label: 'Export Data',
-              onTap: () => context.go('/export'),
+              onTap: () => context.push('/export'),
             ),
             _DrawerTile(
               icon: Icons.info_outline,
