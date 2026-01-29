@@ -387,6 +387,33 @@ class _CalculatorSheetState extends State<_CalculatorSheet> {
 
   void _append(String value) {
     setState(() {
+      const operators = '+-×÷';
+      final lastChar = _expression.isNotEmpty ? _expression[_expression.length - 1] : '';
+
+      if (value == '.') {
+        final lastOperatorIndex = _expression.lastIndexOf(RegExp(r'[+\-×÷]'));
+        final currentNumber = _expression.substring(lastOperatorIndex + 1);
+        if (currentNumber.contains('.')) {
+          return;
+        }
+      }
+
+      if (operators.contains(value)) {
+        if (_expression == '0') {
+          if (value == '-') {
+            _expression = value;
+            _updateLiveResult();
+          }
+          return;
+        }
+
+        if (operators.contains(lastChar) || lastChar == '.') {
+          _expression = _expression.substring(0, _expression.length - 1) + value;
+          _updateLiveResult();
+          return;
+        }
+      }
+
       if (_expression == '0' && value != '.') {
         _expression = value;
       } else {
