@@ -19,6 +19,7 @@ dependencies:
   google_fonts: ^6.2.1
   local_auth: ^2.2.0
   flutter_local_notifications: ^17.2.3
+  font_awesome_flutter: ^10.12.0
   timezone: ^0.9.4
 
 dev_dependencies:
@@ -33,12 +34,6 @@ flutter:
     - assets/logo.png
 
 flutter_icons:
-  android: true
-  ios: true
-
-  # iOS icon
-  image_path_ios: assets/logo.png
-
-  # Android Adaptive Icon
-  adaptive_icon_foreground: assets/logo.png
-  adaptive_icon_background: "#0F172A"
+    android: true
+    ios: true
+    image_path: "assets/logo.png"
