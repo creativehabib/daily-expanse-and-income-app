@@ -96,3 +96,10 @@ final filteredTransactionsProvider = Provider<List<TransactionEntry>>((ref) {
           !entry.date.isAfter(range.end))
       .toList();
 });
+
+final orderedTransactionsProvider = Provider<List<TransactionEntry>>((ref) {
+  final transactions = ref.watch(filteredTransactionsProvider);
+  final ordered = [...transactions]
+    ..sort((a, b) => b.date.compareTo(a.date));
+  return ordered;
+});

@@ -17,12 +17,10 @@ class RecentTransactionsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final transactions = ref.watch(filteredTransactionsProvider);
     final settings = ref.watch(settingsProvider);
     final currencySymbol = currencySymbolFor(settings.currency);
     final formatter = NumberFormat.currency(symbol: currencySymbol);
-    final orderedTransactions = [...transactions]
-      ..sort((a, b) => b.date.compareTo(a.date));
+    final orderedTransactions = ref.watch(orderedTransactionsProvider);
 
     return Scaffold(
       appBar: AppBar(

@@ -29,6 +29,11 @@ final settingsProvider = StateNotifierProvider<SettingsNotifier, AppSettings>(
   (ref) => SettingsNotifier(ref.read(settingsRepositoryProvider)),
 );
 
+final balancePrivacyModeProvider =
+    StateNotifierProvider<BalancePrivacyModeNotifier, bool>(
+  (ref) => BalancePrivacyModeNotifier(ref.read(settingsRepositoryProvider)),
+);
+
 final categoriesProvider = StateNotifierProvider<CategoryNotifier, List<Category>>(
   (ref) => CategoryNotifier(ref.read(categoryRepositoryProvider)),
 );
@@ -106,5 +111,17 @@ class SettingsNotifier extends StateNotifier<AppSettings> {
   Future<void> updateSettings(AppSettings settings) async {
     state = settings;
     await _repository.saveSettings(settings);
+  }
+}
+
+class BalancePrivacyModeNotifier extends StateNotifier<bool> {
+  BalancePrivacyModeNotifier(this._repository)
+      : super(_repository.getBalancePrivacyMode());
+
+  final SettingsRepository _repository;
+
+  Future<void> setEnabled(bool value) async {
+    state = value;
+    await _repository.saveBalancePrivacyMode(value);
   }
 }
