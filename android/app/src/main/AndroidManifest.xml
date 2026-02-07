@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <application
-        android:label="daily_expanse_and_income_app"
+        android:label="Daily Expanse"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

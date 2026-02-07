@@ -21,5 +21,24 @@ dependencies:
   flutter_local_notifications: ^17.2.3
   timezone: ^0.9.4
 
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_launcher_icons: ^0.13.1
+
 flutter:
   uses-material-design: true
+
+  assets:
+    - assets/logo.png
+
+flutter_icons:
+  android: true
+  ios: true
+
+  # iOS icon
+  image_path_ios: assets/logo.png
+
+  # Android Adaptive Icon
+  adaptive_icon_foreground: assets/logo.png
+  adaptive_icon_background: "#0F172A"
