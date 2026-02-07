@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
@@ -83,7 +84,7 @@ class _CustomRangeButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
       onPressed: onPressed,
-      icon: const Icon(Icons.date_range),
+      icon: const FaIcon(FontAwesomeIcons.calendarDays, size: 16),
       label: const Text('Custom'),
       style: OutlinedButton.styleFrom(
         backgroundColor: isSelected ? const Color(0xFF0F766E) : null,

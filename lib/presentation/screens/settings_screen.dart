@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/auth/biometric_auth_service.dart';
@@ -191,7 +192,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         appBar: AppBar(
           title: const Text('Settings'),
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const FaIcon(FontAwesomeIcons.arrowLeft),
             onPressed: () async {
               await _saveSettings();
               if (context.mounted) {
@@ -306,7 +307,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: _resettingData ? null : _confirmReset,
-              icon: const Icon(Icons.restart_alt),
+              icon: const FaIcon(FontAwesomeIcons.rotateRight),
               label: Text(_resettingData ? 'Resetting...' : 'Factory reset'),
             ),
           ],

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -38,6 +39,8 @@ class ReportsScreen extends ConsumerWidget {
             name: categoryIndex[entry.key]?.name ?? 'Unknown',
             color: categoryIndex[entry.key]?.color,
             icon: categoryIndex[entry.key]?.icon,
+            iconFamily: categoryIndex[entry.key]?.iconFamily,
+            iconPackage: categoryIndex[entry.key]?.iconPackage,
             count: categoryCounts[entry.key] ?? 0,
             total: entry.value,
           ),
@@ -51,7 +54,7 @@ class ReportsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Reports'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
           onPressed: () => context.go('/'),
           tooltip: 'Back',
         ),
@@ -367,6 +370,8 @@ class _CategorySummaryItem {
     required this.name,
     required this.color,
     required this.icon,
+    required this.iconFamily,
+    required this.iconPackage,
     required this.count,
     required this.total,
   });
@@ -375,6 +380,8 @@ class _CategorySummaryItem {
   final String name;
   final int? color;
   final int? icon;
+  final String? iconFamily;
+  final String? iconPackage;
   final int count;
   final double total;
 
@@ -395,9 +402,9 @@ class _CategorySummaryItem {
 
   IconData get iconData {
     if (icon != null) {
-      return IconData(icon!, fontFamily: 'MaterialIcons');
+      return IconData(icon!, fontFamily: iconFamily, fontPackage: iconPackage);
     }
-    return Icons.category;
+    return FontAwesomeIcons.shapes;
   }
 }
 

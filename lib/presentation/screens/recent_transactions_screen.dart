@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../../domain/models/transaction_entry.dart';
@@ -53,14 +54,14 @@ class RecentTransactionsScreen extends ConsumerWidget {
                       const PopupMenuItem(
                         value: _TransactionAction.edit,
                         child: ListTile(
-                          leading: Icon(Icons.edit_outlined),
+                          leading: FaIcon(FontAwesomeIcons.penToSquare, size: 16),
                           title: Text('Edit'),
                         ),
                       ),
                       const PopupMenuItem(
                         value: _TransactionAction.delete,
                         child: ListTile(
-                          leading: Icon(Icons.delete_outline, color: Colors.red),
+                          leading: FaIcon(FontAwesomeIcons.trash, color: Colors.red, size: 16),
                           title: Text('Delete'),
                         ),
                       ),
@@ -151,9 +152,9 @@ class _EmptyStateCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(
-            Icons.inbox_outlined,
-            size: 40,
+          const FaIcon(
+            FontAwesomeIcons.inbox,
+            size: 36,
             color: Color(0xFF0F766E),
           ),
           const SizedBox(height: 8),
