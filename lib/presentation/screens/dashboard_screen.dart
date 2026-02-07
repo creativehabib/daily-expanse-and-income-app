@@ -10,8 +10,6 @@ import '../widgets/date_filter_bar.dart';
 import '../widgets/transaction_tile.dart';
 import 'add_transaction_sheet.dart';
 
-final balancePrivacyModeProvider = StateProvider<bool>((ref) => false);
-
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
@@ -26,8 +24,7 @@ class DashboardScreen extends ConsumerWidget {
         : settings.profileEmail.trim();
 
     final transactions = ref.watch(filteredTransactionsProvider);
-    final orderedTransactions = [...transactions]
-      ..sort((a, b) => b.date.compareTo(a.date));
+    final orderedTransactions = ref.watch(orderedTransactionsProvider);
 
     final totalIncome = transactions
         .where((entry) => entry.type == 'income')
@@ -196,8 +193,15 @@ class DashboardScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           if (orderedTransactions.isEmpty)
-            const _EmptyState(
+            _EmptyState(
               message: 'No transactions yet. Add your first entry!',
+              onAddNow: () {
+                showModalBottomSheet<void>(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) => const AddTransactionSheet(),
+                );
+              },
             )
           else
             ...orderedTransactions.take(5).map(
@@ -337,8 +341,9 @@ class _BalanceCard extends ConsumerWidget {
           const SizedBox(height: 8),
           GestureDetector(
             onTap: () {
-              ref.read(balancePrivacyModeProvider.notifier).state =
-              !isPrivacyMode;
+              ref
+                  .read(balancePrivacyModeProvider.notifier)
+                  .setEnabled(!isPrivacyMode);
             },
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -452,9 +457,13 @@ class _BalanceMetric extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.message});
+  const _EmptyState({
+    required this.message,
+    required this.onAddNow,
+  });
 
   final String message;
+  final VoidCallback onAddNow;
 
   @override
   Widget build(BuildContext context) {
@@ -491,6 +500,11 @@ class _EmptyState extends StatelessWidget {
               color: colorScheme.onSurface,
             ),
             textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          FilledButton(
+            onPressed: onAddNow,
+            child: const Text('Add Now'),
           ),
         ],
       ),
