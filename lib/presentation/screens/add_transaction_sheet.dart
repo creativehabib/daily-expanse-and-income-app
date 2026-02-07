@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Import for HapticFeedback
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 // Assuming these exist in your project structure
@@ -56,7 +57,7 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                 Text('Add Transaction', style: Theme.of(context).textTheme.headlineSmall),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: const FaIcon(FontAwesomeIcons.xmark),
                 )
               ],
             ),
@@ -88,7 +89,11 @@ class _AddTransactionSheetState extends ConsumerState<AddTransactionSheet> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
-                    icon: Icon(Icons.calculate, color: Theme.of(context).colorScheme.onPrimaryContainer),
+                    icon: FaIcon(
+                      FontAwesomeIcons.calculator,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      size: 16,
+                    ),
                     tooltip: 'Calculator',
                     onPressed: () => _openCalculator(context),
                   ),

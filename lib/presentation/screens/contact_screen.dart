@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 class ContactScreen extends StatelessWidget {
@@ -10,7 +11,7 @@ class ContactScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Contact'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
           onPressed: () => context.pop(),
           tooltip: 'Back',
         ),
@@ -22,19 +23,19 @@ class ContactScreen extends StatelessWidget {
             child: Column(
               children: const [
                 ListTile(
-                  leading: Icon(Icons.man_outlined),
+                  leading: FaIcon(FontAwesomeIcons.user),
                   title: Text('Habibur Rahaman'),
                   subtitle: Text('Web & App Developer'),
                 ),
                 Divider(height: 0),
                 ListTile(
-                  leading: Icon(Icons.email_outlined),
+                  leading: FaIcon(FontAwesomeIcons.envelope),
                   title: Text('iamhabibnu@gmail.com'),
                   subtitle: Text('Email support'),
                 ),
                 Divider(height: 0),
                 ListTile(
-                  leading: Icon(Icons.public),
+                  leading: FaIcon(FontAwesomeIcons.globe),
                   title: Text('www.creativehabib.com'),
                   subtitle: Text('Visit our website'),
                 ),

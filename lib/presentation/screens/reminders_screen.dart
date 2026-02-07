@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
@@ -279,7 +280,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       appBar: AppBar(
         title: const Text('Reminders'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
           onPressed: () {
             if (context.canPop()) {
               context.pop();
@@ -301,7 +302,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               ),
               FilledButton.icon(
                 onPressed: _startCreate,
-                icon: const Icon(Icons.add),
+                icon: const FaIcon(FontAwesomeIcons.plus),
                 label: const Text('Create'),
               ),
             ],
@@ -368,8 +369,10 @@ class _RemindersScreenState extends State<RemindersScreen> {
                             decoration: InputDecoration(
                               labelText: 'Date',
                               border: const OutlineInputBorder(),
-                              suffixIcon:
-                                  const Icon(Icons.calendar_today_outlined),
+                              suffixIcon: const FaIcon(
+                                FontAwesomeIcons.calendarDays,
+                                size: 16,
+                              ),
                             ),
                           ),
                         ),
@@ -383,7 +386,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                               labelText: 'Time',
                               border: const OutlineInputBorder(),
                               suffixIcon:
-                                  const Icon(Icons.access_time_outlined),
+                                  const FaIcon(FontAwesomeIcons.clock, size: 16),
                             ),
                           ),
                         ),
@@ -418,8 +421,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                         Expanded(
                           child: FilledButton.icon(
                             onPressed: _saveReminder,
-                            icon:
-                                const Icon(Icons.notifications_active_outlined),
+                            icon: const FaIcon(FontAwesomeIcons.bell),
                             label: Text(
                               _editingIndex == null
                                   ? 'Save reminder'
@@ -451,7 +453,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
-                  leading: const Icon(Icons.notifications_outlined),
+                  leading: const FaIcon(FontAwesomeIcons.bell),
                   title: Text(reminder.name),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,11 +471,11 @@ class _RemindersScreenState extends State<RemindersScreen> {
                     spacing: 8,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.edit_outlined),
+                        icon: const FaIcon(FontAwesomeIcons.penToSquare),
                         onPressed: () => _editReminder(index),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.delete_outline),
+                        icon: const FaIcon(FontAwesomeIcons.trash),
                         onPressed: () => _deleteReminder(index),
                       ),
                     ],

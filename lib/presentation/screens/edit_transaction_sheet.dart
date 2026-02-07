@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../domain/models/transaction_entry.dart';
 import '../providers/providers.dart';
@@ -78,7 +79,7 @@ class _EditTransactionSheetState extends ConsumerState<EditTransactionSheet> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: const FaIcon(FontAwesomeIcons.xmark),
                 ),
               ],
             ),

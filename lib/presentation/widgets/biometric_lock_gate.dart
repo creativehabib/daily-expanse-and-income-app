@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import '../../core/auth/biometric_auth_service.dart';
 import '../../domain/models/app_settings.dart';
@@ -118,7 +119,7 @@ class _BiometricLockGateState extends ConsumerState<BiometricLockGate>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.fingerprint, size: 64),
+                    const FaIcon(FontAwesomeIcons.fingerprint, size: 64),
                     const SizedBox(height: 16),
                     Text(
                       'Biometric Login',

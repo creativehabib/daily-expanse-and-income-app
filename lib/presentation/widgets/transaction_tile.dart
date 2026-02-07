@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class TransactionTile extends StatelessWidget {
@@ -41,7 +42,7 @@ class TransactionTile extends StatelessWidget {
     final borderColor = isDark
         ? colorScheme.outline.withOpacity(0.35)
         : colorScheme.outline.withOpacity(0.08);
-    final icon = isIncome ? Icons.arrow_downward : Icons.arrow_upward;
+    final icon = isIncome ? FontAwesomeIcons.arrowDown : FontAwesomeIcons.arrowUp;
 
     return Material(
       color: Colors.transparent,
@@ -74,7 +75,7 @@ class TransactionTile extends StatelessWidget {
                   color: pillColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(icon, color: accentColor, size: 20),
+                child: FaIcon(icon, color: accentColor, size: 18),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -93,8 +94,8 @@ class TransactionTile extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Icon(
-                          Icons.calendar_today_outlined,
+                        FaIcon(
+                          FontAwesomeIcons.calendarDays,
                           size: 12,
                           color: secondaryTextColor,
                         ),

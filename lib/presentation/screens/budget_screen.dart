@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -60,9 +61,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
       return _CategorySpending(
         name: category?.name ?? 'Unknown',
         amount: entry.value,
-        icon: category == null
-            ? Icons.category_outlined
-            : IconData(category.icon, fontFamily: 'MaterialIcons'),
+        icon: category?.iconData ?? FontAwesomeIcons.shapes,
         color: category == null ? Colors.blueGrey : Color(category.color),
       );
     }).toList()
@@ -75,7 +74,7 @@ class _BudgetScreenState extends ConsumerState<BudgetScreen> {
           style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
           onPressed: () => context.go('/'),
           tooltip: 'Back',
         ),
@@ -274,7 +273,7 @@ class _BudgetSummaryCard extends StatelessWidget {
                   backgroundColor: onPrimary.withOpacity(0.2),
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
-                icon: const Icon(Icons.edit, size: 16),
+                icon: const FaIcon(FontAwesomeIcons.penToSquare, size: 14),
                 label: Text(
                   hasBudget ? 'Edit' : 'Set',
                   style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -494,9 +493,10 @@ class _EmptyBudgetState extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.receipt_long_outlined,
+          FaIcon(
+            FontAwesomeIcons.fileInvoice,
             color: colorScheme.onSurfaceVariant,
+            size: 18,
           ),
           const SizedBox(width: 12),
           Expanded(

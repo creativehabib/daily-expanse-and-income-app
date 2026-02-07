@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 class ExportDataScreen extends StatelessWidget {
@@ -10,7 +11,7 @@ class ExportDataScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Export Data'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
           onPressed: () => context.go('/'),
           tooltip: 'Back',
         ),
@@ -32,7 +33,7 @@ class ExportDataScreen extends StatelessWidget {
             const SizedBox(height: 16),
             FilledButton.icon(
               onPressed: () {},
-              icon: const Icon(Icons.download_outlined),
+              icon: const FaIcon(FontAwesomeIcons.download),
               label: const Text('Export CSV'),
             ),
           ],

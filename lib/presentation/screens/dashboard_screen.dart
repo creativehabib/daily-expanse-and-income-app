@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -46,7 +47,7 @@ class DashboardScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.analytics_outlined),
+            icon: const FaIcon(FontAwesomeIcons.chartColumn),
             onPressed: () => context.push('/reports'),
           ),
         ],
@@ -65,7 +66,7 @@ class DashboardScreen extends ConsumerWidget {
               ),
               currentAccountPicture: const CircleAvatar(
                 backgroundColor: Colors.white24,
-                child: Icon(Icons.person, color: Colors.white),
+                child: FaIcon(FontAwesomeIcons.user, color: Colors.white),
               ),
               accountName: Text(
                 profileName,
@@ -77,42 +78,42 @@ class DashboardScreen extends ConsumerWidget {
               ),
             ),
             _DrawerTile(
-              icon: Icons.analytics_outlined,
+              icon: FontAwesomeIcons.chartColumn,
               label: 'Reports',
               onTap: () => context.push('/reports'),
             ),
             _DrawerTile(
-              icon: Icons.category_outlined,
+              icon: FontAwesomeIcons.shapes,
               label: 'Categories',
               onTap: () => context.push('/categories'),
             ),
             _DrawerTile(
-              icon: Icons.account_balance_wallet_outlined,
+              icon: FontAwesomeIcons.wallet,
               label: 'Budget',
               onTap: () => context.push('/budget'),
             ),
             _DrawerTile(
-              icon: Icons.notifications_outlined,
+              icon: FontAwesomeIcons.bell,
               label: 'Reminders',
               onTap: () => context.push('/reminders'),
             ),
             _DrawerTile(
-              icon: Icons.upload_file_outlined,
+              icon: FontAwesomeIcons.fileArrowUp,
               label: 'Export Data',
               onTap: () => context.push('/export'),
             ),
             _DrawerTile(
-              icon: Icons.info_outline,
+              icon: FontAwesomeIcons.circleInfo,
               label: 'About',
               onTap: () => context.push('/about'),
             ),
             _DrawerTile(
-              icon: Icons.contact_support_outlined,
+              icon: FontAwesomeIcons.headset,
               label: 'Contact',
               onTap: () => context.push('/contact'),
             ),
             _DrawerTile(
-              icon: Icons.settings_outlined,
+              icon: FontAwesomeIcons.gear,
               label: 'Settings',
               onTap: () => context.push('/settings'),
             ),
@@ -142,10 +143,10 @@ class DashboardScreen extends ConsumerWidget {
                     color: const Color(0xFF0F766E).withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.history,
+                  child: const FaIcon(
+                    FontAwesomeIcons.clockRotateLeft,
                     color: Color(0xFF0F766E),
-                    size: 18,
+                    size: 16,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -261,7 +262,7 @@ class _GradientFab extends StatelessWidget {
             ],
           ),
           child: const Center(
-            child: Icon(Icons.add, color: Colors.white),
+            child: FaIcon(FontAwesomeIcons.plus, color: Colors.white, size: 20),
           ),
         ),
       ),
@@ -283,7 +284,7 @@ class _DrawerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF0F766E)),
+      leading: FaIcon(icon, color: const Color(0xFF0F766E), size: 18),
       title: Text(
         label,
         style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
@@ -357,12 +358,12 @@ class _BalanceCard extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Icon(
+                FaIcon(
                   isPrivacyMode
-                      ? Icons.visibility_off_outlined
-                      : Icons.visibility_outlined,
+                      ? FontAwesomeIcons.eyeSlash
+                      : FontAwesomeIcons.eye,
                   color: Colors.white70,
-                  size: 20,
+                  size: 18,
                 ),
               ],
             ),
@@ -379,14 +380,14 @@ class _BalanceCard extends ConsumerWidget {
                 label: 'Income',
                 value: income,
                 color: const Color(0xFFB8FFEE),
-                icon: Icons.arrow_downward,
+                icon: FontAwesomeIcons.arrowDown,
               ),
               const SizedBox(width: 16),
               _BalanceMetric(
                 label: 'Expense',
                 value: expense,
                 color: const Color(0xFFFFD2D2),
-                icon: Icons.arrow_upward,
+                icon: FontAwesomeIcons.arrowUp,
               ),
             ],
           ),
@@ -423,7 +424,7 @@ class _BalanceMetric extends StatelessWidget {
             CircleAvatar(
               radius: 18,
               backgroundColor: color.withOpacity(0.2),
-              child: Icon(icon, color: color, size: 18),
+              child: FaIcon(icon, color: color, size: 14),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -488,9 +489,9 @@ class _EmptyState extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.inbox_outlined,
-            size: 40,
+          FaIcon(
+            FontAwesomeIcons.inbox,
+            size: 36,
             color: colorScheme.primary,
           ),
           const SizedBox(height: 8),
